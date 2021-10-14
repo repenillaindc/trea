@@ -1,0 +1,58 @@
+# Version: v2.0
+# Fecha: 21/08/2019
+# Ambiente: Test
+# PersistentVolumen simulador-trea Config
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-simulador-trea-mq2
+  labels:
+    volume: nfs-volume-simulador-trea
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: local-storage
+  local:
+    path: /HUB_ACE
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - tlvmdwacenodo01.pe.igrupobbva
+          - tlvmdwacenodo02.pe.igrupobbva
+---
+---
+# PersistentVolumen simulador-trea Logs
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-simulador-trea-logs-mq2
+  labels:
+    volume: nfs-volume-simulador-trea-logs
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: local-storage
+  local:
+    path: /HUB_LOGS
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - tlvmdwacenodo01.pe.igrupobbva
+          - tlvmdwacenodo02.pe.igrupobbva
+---

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ComIbmCompute.msgnode="ComIbmCompute.msgnode" xmlns:ComIbmFlowOrder.msgnode="ComIbmFlowOrder.msgnode" xmlns:ComIbmMQOutput.msgnode="ComIbmMQOutput.msgnode" xmlns:ComIbmTrace.msgnode="ComIbmTrace.msgnode" xmlns:ComIbmTryCatch.msgnode="ComIbmTryCatch.msgnode" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="SF_Register_Audit.subflow" nsPrefix="SF_Register_Audit.subflow">
+  <eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1">
+    <eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.PATH_LOG" name="PATH_LOG">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.channelName" name="channelName" defaultValueLiteral="SYSTEM.BKR.CONFIG">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.connection" name="connection" lowerBound="1" eType="//%" defaultValueLiteral="CLIENT"/>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.destinationQueueManagerName" name="destinationQueueManagerName" defaultValueLiteral="TMDW1">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.listenerPortNumber" name="listenerPortNumber" defaultValueLiteral="1414">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.queueManagerHostname" name="queueManagerHostname" defaultValueLiteral="p025614.pe.igrupobbva">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <translation xmi:type="utility:TranslatableString" key="SF_Register_Audit" bundleName="SF_Register_Audit" pluginId="LIB_TIN_UTIL"/>
+    <colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/LIB_TIN_UTIL/icons/full/obj16/SF_Register_Audit.gif"/>
+    <colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/LIB_TIN_UTIL/icons/full/obj30/SF_Register_Audit.gif"/>
+    <composition>
+      <nodes xmi:type="eflow:FCMSource" xmi:id="InTerminal.Input" location="18,154">
+        <translation xmi:type="utility:TranslatableString" key="InTerminal.Input" bundleName="SF_Register_Audit" pluginId="LIB_TIN_UTIL"/>
+      </nodes>
+      <nodes xmi:type="ComIbmTrace.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_1" location="75,83" destination="file" pattern="#InputLog - Fecha: ${CURRENT_TIMESTAMP}&#xD;&#xA;Root[${Root}]&#xD;&#xA;Environment[${Environment}]">
+        <translation xmi:type="utility:ConstantString" string="InputLog"/>
+      </nodes>
+      <nodes xmi:type="ComIbmTryCatch.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_2" location="266,116">
+        <translation xmi:type="utility:ConstantString" string="TryCatch"/>
+      </nodes>
+      <nodes xmi:type="ComIbmFlowOrder.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_3" location="171,154">
+        <translation xmi:type="utility:ConstantString" string="Flow Order"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_4" location="344,181" computeExpression="esql://routine/#SF_Register_Audit_Prepare_Audit.Main">
+        <translation xmi:type="utility:ConstantString" string="PrepareAudit"/>
+      </nodes>
+      <nodes xmi:type="ComIbmTrace.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_5" location="430,134" destination="file" pattern="#PrepareAudit - Fecha: ${CURRENT_TIMESTAMP}&#xD;&#xA;Root[${Root}]">
+        <translation xmi:type="utility:ConstantString" string="LogPrepareAudit"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_6" location="522,182" queueName="QL.TIN.AUDIT.REQ.01" transactionMode="no" persistenceMode="no">
+        <translation xmi:type="utility:ConstantString" string="QL.TIN.AUDIT.REQ.01"/>
+      </nodes>
+      <nodes xmi:type="ComIbmTryCatch.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_7" location="253,259">
+        <translation xmi:type="utility:ConstantString" string="TryCatchFatal"/>
+      </nodes>
+      <nodes xmi:type="eflow:FCMSink" xmi:id="OutTerminal.Output" location="702,263">
+        <translation xmi:type="utility:TranslatableString" key="OutTerminal.Output" bundleName="SF_Register_Audit" pluginId="LIB_TIN_UTIL"/>
+      </nodes>
+      <nodes xmi:type="ComIbmTrace.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_8" location="714,112" destination="file" pattern="#AuditErrorTryCatch Fecha: ${CURRENT_TIMESTAMP} - Qmgr: ${QueueManagerName} - Broker: ${BrokerName}&#xD;&#xA;ExceptionList[${ExceptionList}]">
+        <translation xmi:type="utility:ConstantString" string="ErrTryCatchLog"/>
+      </nodes>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_2" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.first" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_3" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.try" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_4" targetNode="FCMComposite_1_7" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.second" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_5" targetNode="OutTerminal.Output" sourceNode="FCMComposite_1_7" sourceTerminalName="OutTerminal.try" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_6" targetNode="FCMComposite_1_8" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.catch" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_7" targetNode="FCMComposite_1_8" sourceNode="FCMComposite_1_7" sourceTerminalName="OutTerminal.catch" targetTerminalName="InTerminal.in">
+        <bendPoints>366,-14,-93,133</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_8" targetNode="FCMComposite_1_6" sourceNode="FCMComposite_1_5" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_10" targetNode="FCMComposite_1_6" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_9" targetNode="FCMComposite_1_3" sourceNode="InTerminal.Input" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+    </composition>
+    <propertyOrganizer>
+      <propertyDescriptor groupName="Group.Basic" configurable="true" describedAttribute="Property.PATH_LOG">
+        <propertyName xmi:type="utility:TranslatableString" key="Property.PATH_LOG" bundleName="SF_Register_Audit" pluginId="LIB_TIN_UTIL"/>
+        <propertyDescriptor groupName="Group.Basic" propertyEditor="com.ibm.etools.mft.ibmnodes.editors.mq.ChannelNameEditor" configurable="true" describedAttribute="Property.channelName">
+          <propertyName xmi:type="utility:TranslatableString" key="Property.channelName" bundleName="ComIbmMQOutput" pluginId="com.ibm.etools.mft.ibmnodes.definitions"/>
+          <propertyDescriptor groupName="Group.Basic" propertyEditor="com.ibm.etools.mft.ibmnodes.editors.mq.BindingTypeEditor" configurable="true" describedAttribute="Property.connection">
+            <propertyName xmi:type="utility:TranslatableString" key="Property.connection" bundleName="ComIbmMQOutput" pluginId="com.ibm.etools.mft.ibmnodes.definitions"/>
+            <propertyDescriptor groupName="Group.Basic" propertyEditor="com.ibm.etools.mft.ibmnodes.editors.mq.RemoteQueueManagerNameEditor" configurable="true" describedAttribute="Property.destinationQueueManagerName">
+              <propertyName xmi:type="utility:TranslatableString" key="Property.destinationQueueManagerName" bundleName="ComIbmMQOutput" pluginId="com.ibm.etools.mft.ibmnodes.definitions"/>
+              <propertyDescriptor groupName="Group.Basic" propertyEditor="com.ibm.etools.mft.ibmnodes.editors.mq.PortPropertyEditor" configurable="true" describedAttribute="Property.listenerPortNumber">
+                <propertyName xmi:type="utility:TranslatableString" key="Property.listenerPortNumber" bundleName="ComIbmMQOutput" pluginId="com.ibm.etools.mft.ibmnodes.definitions"/>
+                <propertyDescriptor groupName="Group.Basic" propertyEditor="com.ibm.etools.mft.ibmnodes.editors.mq.HostnamePropertyEditor" configurable="true" describedAttribute="Property.queueManagerHostname">
+                  <propertyName xmi:type="utility:TranslatableString" key="Property.queueManagerHostname" bundleName="ComIbmMQOutput" pluginId="com.ibm.etools.mft.ibmnodes.definitions"/>
+                </propertyDescriptor>
+              </propertyDescriptor>
+            </propertyDescriptor>
+          </propertyDescriptor>
+        </propertyDescriptor>
+      </propertyDescriptor>
+    </propertyOrganizer>
+    <attributeLinks promotedAttribute="Property.PATH_LOG" overriddenNodes="FCMComposite_1_1 FCMComposite_1_5 FCMComposite_1_8">
+      <overriddenAttribute href="ComIbmTrace.msgnode#Property.filePath"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.channelName" overriddenNodes="FCMComposite_1_6">
+      <overriddenAttribute href="ComIbmMQOutput.msgnode#Property.channelName"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.connection" overriddenNodes="FCMComposite_1_6">
+      <overriddenAttribute href="ComIbmMQOutput.msgnode#Property.connection"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.destinationQueueManagerName" overriddenNodes="FCMComposite_1_6">
+      <overriddenAttribute href="ComIbmMQOutput.msgnode#Property.destinationQueueManagerName"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.listenerPortNumber" overriddenNodes="FCMComposite_1_6">
+      <overriddenAttribute href="ComIbmMQOutput.msgnode#Property.listenerPortNumber"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.queueManagerHostname" overriddenNodes="FCMComposite_1_6">
+      <overriddenAttribute href="ComIbmMQOutput.msgnode#Property.queueManagerHostname"/>
+    </attributeLinks>
+    <stickyBoard/>
+  </eClassifiers>
+  <eClassifiers xmi:type="ecore:EEnum">
+    <eLiterals xmi:id="connection.SERVER" name="SERVER"/>
+    <eLiterals xmi:id="connection.CLIENT" name="CLIENT" value="1"/>
+    <eLiterals xmi:id="connection.CCDT" name="CCDT" value="2"/>
+  </eClassifiers>
+</ecore:EPackage>

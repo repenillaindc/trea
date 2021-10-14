@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ComIbmCompute.msgnode="ComIbmCompute.msgnode" xmlns:ComIbmMQGet.msgnode="ComIbmMQGet.msgnode" xmlns:ComIbmMQHeader.msgnode="ComIbmMQHeader.msgnode" xmlns:ComIbmMQOutput.msgnode="ComIbmMQOutput.msgnode" xmlns:ComIbmSOAPExtract.msgnode="ComIbmSOAPExtract.msgnode" xmlns:ComIbmSOAPInput.msgnode="ComIbmSOAPInput.msgnode" xmlns:ComIbmSOAPReply.msgnode="ComIbmSOAPReply.msgnode" xmlns:ComIbmThrow.msgnode="ComIbmThrow.msgnode" xmlns:ComIbmTrace.msgnode="ComIbmTrace.msgnode"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="pe/com/bbva/trea/MF_SOAP_SIMULADOR_TREA.msgflow" nsPrefix="pe_com_bbva_trea_MF_SOAP_SIMULADOR_TREA.msgflow">
+  <eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1">
+    <eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.PATH_LOG" name="PATH_LOG" defaultValueLiteral="D:\simuladorTrea.log">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.queueManagerHostname" name="queueManagerHostname" defaultValueLiteral="NOTEBOOK-WW">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.listenerPortNumber" name="listenerPortNumber" defaultValueLiteral="1414">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.destinationQueueManagerName" name="destinationQueueManagerName" defaultValueLiteral="SUPERQM">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.channelName" name="channelName" defaultValueLiteral="SYSTEM.BKR.CONFIG">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.connection" name="connection" lowerBound="1" eType="//%" defaultValueLiteral="CLIENT"/>
+    <translation xmi:type="utility:TranslatableString" key="MF_SOAP_SIMULADOR_TREA" bundleName="pe/com/bbva/trea/MF_SOAP_SIMULADOR_TREA" pluginId="APP_SIMULADOR_TREA"/>
+    <colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/APP_SIMULADOR_TREA/icons/full/obj16/MF_SOAP_SIMULADOR_TREA.gif"/>
+    <colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/APP_SIMULADOR_TREA/icons/full/obj30/MF_SOAP_SIMULADOR_TREA.gif"/>
+    <composition>
+      <nodes xmi:type="ComIbmSOAPInput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_1" location="23,99" wsdlFileName="WS_SimuladorTrea.wsdl" selectedPortType="WS_SimuladorTrea" selectedBinding="WS_SimuladorTreaSOAP" selectedPort="WS_SimuladorTreaSOAP" targetNamespace="http://bbva.com.pe/sist/operation/service" useHTTPTransport="true" urlSelector="/bbva/SIST/services/ProcessRequest">
+        <translation xmi:type="utility:ConstantString" string="ServiceRequest"/>
+      </nodes>
+      <nodes xmi:type="ComIbmSOAPExtract.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_2" location="220,104">
+        <translation xmi:type="utility:ConstantString" string="SOAP Extract"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_3" location="410,110" computeExpression="esql://routine/pe.com.bbva.trea#DoXMLToCWF.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="DoXMLToCWF"/>
+      </nodes>
+      <nodes xmi:type="ComIbmTrace.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_4" location="122,26" destination="file" pattern=">>> REQUEST TO SERVICE : ${CURRENT_TIMESTAMP}&#xD;&#xA;Request[${Root}]">
+        <translation xmi:type="utility:ConstantString" string="Trace_1"/>
+      </nodes>
+      <nodes xmi:type="ComIbmTrace.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_5" location="322,31" destination="file" pattern=">>> Trace_2 : ${CURRENT_TIMESTAMP}&#xD;&#xA;Request[${Root}]&#xD;&#xA;Environment[${Environment}]&#xD;&#xA;Local Environment[${LocalEnvironment}]&#xD;&#xA;Exception List[${ExceptionList}]">
+        <translation xmi:type="utility:ConstantString" string="Trace_2"/>
+      </nodes>
+      <nodes xmi:type="ComIbmTrace.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_6" location="502,26" destination="file" pattern=">>>XML_TO_CWF : ${CURRENT_TIMESTAMP}&#xD;&#xA;Request[${Root}]&#xD;&#xA;Environment[${Environment}]&#xD;&#xA;Local Environment[${LocalEnvironment}]&#xD;&#xA;Exception List[${ExceptionList}]">
+        <translation xmi:type="utility:ConstantString" string="Trace_3"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_9" location="581,111" destinationMode="list">
+        <translation xmi:type="utility:ConstantString" string="SendRequestProv"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQGet.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_10" location="799,119" queueName="QL.RS.XD" getWithCorrelID="true">
+        <translation xmi:type="utility:ConstantString" string="ReceiveResponseProv"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQHeader.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_11" location="713,115" mqmdAAAOptions="Modify header" mqmdCodedCharSetId="Inherit" mqmdFormat="Inherit" mqmdMsgType="Inherit" mqmdExpiry="Inherit" mqmdFeedback="Inherit" mqmdMsgId="Inherit" mqmdCorrelId="$LocalEnvironment/WrittenDestination/MQ/DestinationData[1]/msgId" mqmdReplyToQ="Inherit" mqmdReplyToQMgr="Inherit">
+        <translation xmi:type="utility:ConstantString" string="MQ Header"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_7" location="985,119" computeExpression="esql://routine/pe.com.bbva.trea#DoCWFToXML.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="DoCWFToXML"/>
+      </nodes>
+      <nodes xmi:type="ComIbmTrace.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_8" location="976,24" destination="file" pattern=">>> Response_No_Message&#xD;&#xA;Response_No_Message[${Root}]">
+        <translation xmi:type="utility:ConstantString" string="Rs_No_Message"/>
+      </nodes>
+      <nodes xmi:type="ComIbmThrow.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_12" location="1155,24" messageNumber="3005" messageText="Timeout in Host">
+        <translation xmi:type="utility:ConstantString" string="Throw"/>
+      </nodes>
+      <nodes xmi:type="ComIbmSOAPReply.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_13" location="1152,122">
+        <translation xmi:type="utility:ConstantString" string="SOAP Reply"/>
+      </nodes>
+      <nodes xmi:type="ComIbmTrace.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_14" location="916,234" destination="file" pattern=">>> RS_FROM_HOST : ${CURRENT_TIMESTAMP}&#xD;&#xA;Request[${Root}]&#xD;&#xA;Environment[${Environment}]&#xD;&#xA;Local Environment[${LocalEnvironment}]">
+        <translation xmi:type="utility:ConstantString" string="Trace_4"/>
+      </nodes>
+      <nodes xmi:type="ComIbmTrace.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_15" location="1070,236" destination="file" pattern=">>> CWF_TO_XML : ${CURRENT_TIMESTAMP}&#xD;&#xA;Request[${Root}]&#xD;&#xA;Environment[${Environment}]&#xD;&#xA;Local Environment[${LocalEnvironment}]">
+        <translation xmi:type="utility:ConstantString" string="Trace_5"/>
+      </nodes>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_2" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_3" targetNode="FCMComposite_1_5" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_4" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_5" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_5" targetNode="FCMComposite_1_6" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_8" targetNode="FCMComposite_1_10" sourceNode="FCMComposite_1_11" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_6" targetNode="FCMComposite_1_9" sourceNode="FCMComposite_1_6" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_10" targetNode="FCMComposite_1_8" sourceNode="FCMComposite_1_10" sourceTerminalName="OutTerminal.noMessage" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_11" targetNode="FCMComposite_1_12" sourceNode="FCMComposite_1_8" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_13" targetNode="FCMComposite_1_14" sourceNode="FCMComposite_1_10" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_14" targetNode="FCMComposite_1_7" sourceNode="FCMComposite_1_14" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_15" targetNode="FCMComposite_1_15" sourceNode="FCMComposite_1_7" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_16" targetNode="FCMComposite_1_13" sourceNode="FCMComposite_1_15" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_12" targetNode="FCMComposite_1_11" sourceNode="FCMComposite_1_9" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+    </composition>
+    <propertyOrganizer>
+      <propertyDescriptor groupName="Group.Basic" configurable="true" describedAttribute="Property.PATH_LOG">
+        <propertyName xmi:type="utility:TranslatableString" key="Property.PATH_LOG" bundleName="pe/com/bbva/trea/MF_SOAP_SIMULADOR_TREA" pluginId="APP_SIMULADOR_TREA"/>
+        <propertyDescriptor groupName="Group.Basic" propertyEditor="com.ibm.etools.mft.ibmnodes.editors.mq.HostnamePropertyEditor" configurable="true" describedAttribute="Property.queueManagerHostname">
+          <propertyName xmi:type="utility:TranslatableString" key="Property.queueManagerHostname" bundleName="ComIbmMQGet" pluginId="com.ibm.etools.mft.ibmnodes.definitions"/>
+          <propertyDescriptor groupName="Group.Basic" propertyEditor="com.ibm.etools.mft.ibmnodes.editors.mq.PortPropertyEditor" configurable="true" describedAttribute="Property.listenerPortNumber">
+            <propertyName xmi:type="utility:TranslatableString" key="Property.listenerPortNumber" bundleName="ComIbmMQGet" pluginId="com.ibm.etools.mft.ibmnodes.definitions"/>
+            <propertyDescriptor groupName="Group.Basic" propertyEditor="com.ibm.etools.mft.ibmnodes.editors.mq.RemoteQueueManagerNameEditor" configurable="true" describedAttribute="Property.destinationQueueManagerName">
+              <propertyName xmi:type="utility:TranslatableString" key="Property.destinationQueueManagerName" bundleName="ComIbmMQGet" pluginId="com.ibm.etools.mft.ibmnodes.definitions"/>
+              <propertyDescriptor groupName="Group.Basic" propertyEditor="com.ibm.etools.mft.ibmnodes.editors.mq.ChannelNameEditor" configurable="true" describedAttribute="Property.channelName">
+                <propertyName xmi:type="utility:TranslatableString" key="Property.channelName" bundleName="ComIbmMQGet" pluginId="com.ibm.etools.mft.ibmnodes.definitions"/>
+                <propertyDescriptor groupName="Group.Basic" propertyEditor="com.ibm.etools.mft.ibmnodes.editors.mq.BindingTypeEditor" configurable="true" describedAttribute="Property.connection">
+                  <propertyName xmi:type="utility:TranslatableString" key="Property.connection" bundleName="ComIbmMQGet" pluginId="com.ibm.etools.mft.ibmnodes.definitions"/>
+                </propertyDescriptor>
+              </propertyDescriptor>
+            </propertyDescriptor>
+          </propertyDescriptor>
+        </propertyDescriptor>
+      </propertyDescriptor>
+    </propertyOrganizer>
+    <attributeLinks promotedAttribute="Property.PATH_LOG" overriddenNodes="FCMComposite_1_4 FCMComposite_1_5 FCMComposite_1_6 FCMComposite_1_14 FCMComposite_1_15">
+      <overriddenAttribute href="ComIbmTrace.msgnode#Property.filePath"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.queueManagerHostname" overriddenNodes="FCMComposite_1_10">
+      <overriddenAttribute href="ComIbmMQGet.msgnode#Property.queueManagerHostname"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.queueManagerHostname" overriddenNodes="FCMComposite_1_9">
+      <overriddenAttribute href="ComIbmMQOutput.msgnode#Property.queueManagerHostname"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.listenerPortNumber" overriddenNodes="FCMComposite_1_10">
+      <overriddenAttribute href="ComIbmMQGet.msgnode#Property.listenerPortNumber"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.listenerPortNumber" overriddenNodes="FCMComposite_1_9">
+      <overriddenAttribute href="ComIbmMQOutput.msgnode#Property.listenerPortNumber"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.destinationQueueManagerName" overriddenNodes="FCMComposite_1_10">
+      <overriddenAttribute href="ComIbmMQGet.msgnode#Property.destinationQueueManagerName"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.destinationQueueManagerName" overriddenNodes="FCMComposite_1_9">
+      <overriddenAttribute href="ComIbmMQOutput.msgnode#Property.destinationQueueManagerName"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.channelName" overriddenNodes="FCMComposite_1_10">
+      <overriddenAttribute href="ComIbmMQGet.msgnode#Property.channelName"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.channelName" overriddenNodes="FCMComposite_1_9">
+      <overriddenAttribute href="ComIbmMQOutput.msgnode#Property.channelName"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.connection" overriddenNodes="FCMComposite_1_10">
+      <overriddenAttribute href="ComIbmMQGet.msgnode#Property.connection"/>
+    </attributeLinks>
+    <attributeLinks promotedAttribute="Property.connection" overriddenNodes="FCMComposite_1_9">
+      <overriddenAttribute href="ComIbmMQOutput.msgnode#Property.connection"/>
+    </attributeLinks>
+    <stickyBoard/>
+  </eClassifiers>
+  <eClassifiers xmi:type="ecore:EEnum">
+    <eLiterals xmi:id="connection.SERVER" name="SERVER"/>
+    <eLiterals xmi:id="connection.CLIENT" name="CLIENT" value="1"/>
+    <eLiterals xmi:id="connection.CCDT" name="CCDT" value="2"/>
+  </eClassifiers>
+</ecore:EPackage>

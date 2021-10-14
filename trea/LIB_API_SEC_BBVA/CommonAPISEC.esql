@@ -1,0 +1,45 @@
+
+
+CREATE PROCEDURE ProcessOfEncrypted( IN Data CHARACTER,
+                                     IN BinZona CHARACTER,
+                                     IN Referencia CHARACTER, 
+								    OUT Resultado INTEGER, 
+									OUT DataCifrada CHARACTER,
+									OUT LongDataCifrada INTEGER,
+									OUT ClaveKSIMKpubER CHARACTER,
+									OUT LongClaveKSIMKpubER INTEGER )
+LANGUAGE JAVA 
+EXTERNAL NAME "pe.com.bbva.siso.SECCustomBBVAAPI.cifrar";
+
+
+CREATE PROCEDURE ProcessOfDecrypted( IN Data CHARACTER,
+ 									 IN ClaveKSIMKpubER CHARACTER,
+ 									 IN BinZonaServer CHARACTER,
+ 									 IN BinZonaClient CHARACTER,
+ 									 IN Referencia CHARACTER,
+								    OUT Resultado INTEGER, 
+									OUT Data CHARACTER,
+									OUT LongData INTEGER )
+LANGUAGE JAVA 
+EXTERNAL NAME "pe.com.bbva.siso.SECCustomBBVAAPI.descifrar";
+
+
+CREATE PROCEDURE ProcessOfSignature( IN Data CHARACTER,
+ 									 IN BinZonaServer CHARACTER,
+ 									 IN BinZonaClient CHARACTER,
+                                     IN Referencia CHARACTER, 
+								    OUT Resultado INTEGER, 
+									OUT Firma CHARACTER,
+									OUT LongFirma INTEGER )
+LANGUAGE JAVA 
+EXTERNAL NAME "pe.com.bbva.siso.SECCustomBBVAAPI.firmar";
+
+
+CREATE PROCEDURE ProcessOfValidate( IN Data CHARACTER, 
+								    IN Firma CHARACTER,
+                                    IN BinZona CHARACTER,								    
+								    IN Referencia CHARACTER,
+								   OUT Resultado INTEGER )
+LANGUAGE JAVA 
+EXTERNAL NAME "pe.com.bbva.siso.SECCustomBBVAAPI.validar";
+

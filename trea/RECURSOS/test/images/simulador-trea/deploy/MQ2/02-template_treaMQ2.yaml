@@ -1,0 +1,136 @@
+# Version: v2.0
+# Fecha: 21/08/2019
+# Ambiente: Test
+# Plantilla base para la creacion de POD con un solo contenedor
+# Las tildes han sido omitidas intencionalmente
+
+# Pasos:
+# Se tiene que reemplazar los siguientes parametros segun la aplicacion a crear:
+# - tinonline: Nombre del namespace en el cual se va a desplegar el proyecto
+# - simulador-trea: Nombre de la primera aplicacion
+# - app2: Nombre de la segunda aplicacion
+
+#ConfigMap para simulador-trea
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-simulador-trea-mq2
+  namespace: nms-trea
+data:
+  RUTA_ACE_DB: /opt/IBM/ace-11.0.0.6/server/ODBC/unixodbc/
+  ODBCINI: /opt/IBM/ace-11.0.0.6/server/ODBC/unixodbc/odbc.ini
+  ODBCSYSINI: /opt/IBM/ace-11.0.0.6/server/ODBC/unixodbc/odbcinst.ini
+  IsLogCon: 'true'
+  Format: text
+  LogApp: /logs/proyecto/simulador-trea/logsExec/hub-simulador-trea-mq2.log
+  IsAuthBase: 'false'
+  AdmSec: active
+  IsSnapshot: active
+  OutFormSna: bluemix
+  IsRepRes: 'true'
+  OutFormRes: bluemix
+  espera: '60'
+  work_dir: simulador-trea
+  VERSION_ACE: 'ace-11.0.0.6'
+# Configuracion de la aplicacion
+  BAR: BAR_SIMULADORTREA.bar             # BAR de la aplicacion
+  PortConsol: '7600'            # Puerto de la consola administrativa del ACE
+  NAME_QM: TMDW2                # Nombre Queue Manager
+  HOST_MQ: '118.180.188.128'    # IP Server Queue Manager
+  PORT_MQ: '2415'               # Puerto Queue Manager
+  CHANNEL_MQ: 'CHL.HUB.CLT.TCP' # Canal Queue Manager
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: deploy-simulador-trea-mq2          # Cambiar name
+ namespace: nms-trea     # Cambiar namespace
+spec:
+ replicas: 1                    # Indica la cantidad de PODs a instanciar
+ selector:
+  matchLabels:
+   app: hub-simulador-trea-mq2
+ minReadySeconds: 10
+ strategy:
+  type: RollingUpdate
+  rollingUpdate:
+   maxUnavailable: 1
+   maxSurge: 1
+ template:
+  metadata:
+   labels:
+    app: hub-simulador-trea-mq2
+  spec:
+   containers:
+   # Container simulador-trea
+   - name: pod-simulador-trea
+     image: 118.180.188.129:5000/hub-ace:v11.0.0.6  # Imagen base para la creacion de los contenedores
+     imagePullPolicy: IfNotPresent
+     resources:
+       limits: 
+         cpu: 200m
+         #memory: 1024Mi
+       requests:
+         cpu: 100m
+         #memory: 512Mi
+     ports:
+     - containerPort: 7600    # Puerto en el contenedor de la consola administrativa del ACE
+     env:
+     - name: MY_POD_IP
+       valueFrom:
+         fieldRef:
+           fieldPath: status.podIP
+     envFrom:
+     - configMapRef:
+         name: config-simulador-trea-mq2
+     volumeMounts:
+          - mountPath: "/app/bbva/esb"
+            name: nfs-export-fast-simulador-trea
+          - mountPath: "/logs"
+            name: nfs-export-logs-simulador-trea
+          - mountPath: "/etc/localtime"
+            name: tz-config-simulador-trea
+   volumes:
+     # Volumen simulador-trea
+     - name: nfs-export-fast-simulador-trea
+       persistentVolumeClaim:
+          claimName: pv-simulador-trea-mq2
+     - name: nfs-export-logs-simulador-trea
+       persistentVolumeClaim:
+          claimName: pv-simulador-trea-logs-mq2
+     - name: tz-config-simulador-trea
+       hostPath:
+          path: /usr/share/zoneinfo/America/Bogota
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: console-simulador-trea-svc-mq2
+ namespace: nms-trea
+ labels:
+  app: hub-simulador-trea-mq2
+spec:
+ type: NodePort
+ ports:
+ - port: 7600         # Puerto en el contenedor de la consola administrativa del ACE
+   nodePort: 30381    # Puerto externo de la consola administrativa del ACE 
+   protocol: TCP
+ selector:
+  app: hub-simulador-trea-mq2
+---
+apiVersion: v1
+kind: Service
+metadata: 
+ name: post-simulador-trea-svc-mq2
+ namespace: nms-trea
+ labels:
+  app: hub-simulador-trea-mq2
+spec: 
+ type: NodePort
+ ports:
+ - port: 7800
+   nodePort: 30382
+   protocol: TCP
+ selector: 
+  app: hub-simulador-trea-mq2

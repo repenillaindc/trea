@@ -1,0 +1,39 @@
+# Version: v2.0
+# Fecha: 21/08/2019
+# Ambiente: Test
+# PersistentVolumenClaim simulador-trea Logs
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pv-simulador-trea-logs-mq1
+  namespace: nms-trea
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: "local-storage"
+  selector:
+    matchLabels:
+      volume: nfs-volume-simulador-trea-logs
+  resources:
+    requests:
+      storage: 1Gi
+---
+--- 
+# PersistentVolumenClaim simulador-trea Config      
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pv-simulador-trea-mq1
+  namespace: nms-trea
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: "local-storage"
+  selector:
+    matchLabels:
+      volume: nfs-volume-simulador-trea
+  resources:
+    requests:
+      storage: 1Gi
+---
+--- 

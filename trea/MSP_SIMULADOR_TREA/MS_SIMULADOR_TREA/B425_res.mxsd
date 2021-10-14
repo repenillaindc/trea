@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:include schemaLocation="B425_res_cabecera.mxsd"/>
+    <xsd:include schemaLocation="B425_res_detalle.mxsd"/>
+    <xsd:include schemaLocation="B425_res_total.mxsd"/>
+    <xsd:include schemaLocation="B425_res_mensaje.mxsd"/>
+  <xsd:complexType name="BGNC425OUT">
+    <xsd:annotation>
+      <xsd:appinfo source="WMQI_APPINFO">
+        <tdsStructRep dataElementSeparation="AllElementsDelimited" delimiter="[B425]" messageSetDefaultRep="Text1"/>
+      </xsd:appinfo>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="B4251_OUT" type="bgnc4251_n4251__output__b425"/>
+      <xsd:element name="B4252_OUT_LIST" type="B4252_OUT_LIST"/>
+      <xsd:element name="B4253_OUT" type="bgnc4253_n4253__output__b425"/>
+      <xsd:element name="B4254_OUT_LIST" type="B4254_OUT_LIST"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="B4252_OUT_LIST">
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" name="B4252_OUT" type="bgnc4252_n4252__output__b425"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="msg_BGNC425OUT" type="BGNC425OUT">
+    <xsd:annotation>
+      <xsd:appinfo source="WMQI_APPINFO">
+        <MRMessage messageDefinition="/0/msg_BGNC425OUT;XSDElementDeclaration$MRObject"/>
+      </xsd:appinfo>
+    </xsd:annotation>
+  </xsd:element>
+    <xsd:complexType name="B4254_OUT_LIST">
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" name="B4254_OUT" type="bgnc4254_n4254__output__b425"/>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

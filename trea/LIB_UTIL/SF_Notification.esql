@@ -1,0 +1,48 @@
+
+
+CREATE COMPUTE MODULE SF_Notification_PrepareEmail
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN		
+	    DECLARE Number  INTEGER 0;
+	    DECLARE TextEr  CHARACTER '';
+		DECLARE Options INTEGER BITOR(FolderBitStream, ValidateNone);
+		
+		CREATE LASTCHILD OF Environment DOMAIN 'XMLNSC' NAME 'DataErr';
+		IF CARDINALITY(InputExceptionList.*[]) = 0 THEN
+	        SET TextEr = Environment.Variables.Email.Body;
+	        SET Environment.DataErr = Environment.Variables.Email.AttachData;
+		ELSE
+			CALL GetDetalleError(InputExceptionList, Number, TextEr);
+			SET Environment.DataErr = InputExceptionList;
+		END IF;
+	    
+	    IF Number <> C_NUMBER_ERROR_TIMEOUT THEN     	
+		    SET TextEr = 'Gestor: ' || QueueManagerName    || '<br>' ||
+		                 'Intermediario: ' || BrokerName   || '<br>' ||
+		    			 'Grupo: '  || ExecutionGroupLabel || '<br>' ||
+		    			 'Flujo: '  || MessageFlowLabel    || '<br>' ||
+		    			 'Detalle: '|| TextEr;
+		    			 
+		 	SET Environment.Variables.Email.Body = CAST(TextEr AS BLOB CCSID C_CCSID_ISO88591_ASCII);
+			SET Environment.Variables.Email.AttachData = ASBITSTREAM(Environment.DataErr.*[1] OPTIONS Options CCSID C_CCSID_ISO88591_ASCII);
+		    SET Environment.DataErr = NULL;
+		    
+		    CALL SendEmail(OutputRoot, Environment.Variables);
+	    END IF;	
+		RETURN FALSE;
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+		SET OutputRoot = InputRoot;
+	END;
+END MODULE;

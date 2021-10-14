@@ -1,0 +1,229 @@
+
+
+/*
+ * Devuelve mensaje en formato de tipo BLOB utilizando un MRM.
+ *
+ * (IN)RefMRM 			: Referencia al mensaje MRM(Incluye el *.MRM).
+ * (IN)CodeCharsetId 	: CCSID del MRM. 
+ * (IN)MsgSet 			: Nombre del message set del MRM.
+ * (IN)MsgType 			: Nombre del message type del MRM.
+ * (IN)MsgFormat 	    : Nombre del message format del MRM. 
+ */
+CREATE FUNCTION MRMToBlob(IN RefMRM REFERENCE, IN CodeCharsetId INTEGER, IN MsgSet CHARACTER, 
+						  IN MsgType CHARACTER, IN MsgFormat CHARACTER) RETURNS BLOB
+BEGIN
+	DECLARE dataBlob BLOB;
+	DECLARE options INTEGER BITOR(EmbeddedBitStream, ValidateNone);--BITOR(FolderBitStream, ValidateNone);		
+		
+	-- Convertir a BLOB
+	SET dataBlob = ASBITSTREAM( RefMRM OPTIONS options CCSID CodeCharsetId 
+								SET MsgSet TYPE MsgType FORMAT MsgFormat);
+	
+	RETURN dataBlob;
+END;
+
+
+/*
+ * Devuelve mensaje en formato de tipo BLOB utilizando un XML.
+ *
+ * (IN)RefXML 			: Referencia al mensaje MRM(Incluye el *.MRM).
+ * (IN)CodeCharsetId 	: CCSID del XML. 
+ */
+CREATE FUNCTION XMLToBlob(IN RefXML REFERENCE, IN CodeCharsetId INTEGER) RETURNS BLOB
+BEGIN
+	DECLARE dataBlob BLOB;
+	DECLARE options INTEGER BITOR(FolderBitStream, ValidateNone);--BITOR(EmbeddedBitStream, ValidateNone);		
+		
+	-- Convertir a BLOB
+	SET dataBlob = ASBITSTREAM( RefXML OPTIONS options CCSID CodeCharsetId);
+	
+	RETURN dataBlob;
+END;
+
+
+/*
+ * Devuelve mensaje en formato de trama posicional utilizando un MRM.
+ *
+ * (IN)RefMRM 	        : Referencia al mensaje MRM(Incluye el *.MRM).
+ * (IN)CodeCharsetId 	: CCSID del MRM.
+ * (IN)MsgSet 			: Nombre del message set del MRM.
+ * (IN)MsgType 			: Nombre del message type del MRM.
+ * (IN)MsgFormat 	    : Nombre del message format del MRM.  
+ */
+CREATE FUNCTION MRMToChar(IN RefMRM REFERENCE, IN CodeCharsetId INTEGER, IN MsgSet CHARACTER, 
+						  IN MsgType CHARACTER, IN MsgFormat CHARACTER) RETURNS CHARACTER
+BEGIN
+	DECLARE dataBlob BLOB;
+		
+	-- Convertir a BLOB
+	SET dataBlob = MRMToBlob(RefMRM,CodeCharsetId,MsgSet,MsgType,MsgFormat);	
+																
+    --Blob a Char.
+	RETURN BlobToChar(dataBlob,CodeCharsetId);
+END;
+
+
+/*
+* Permite formatear un BLOB a CHARACTER.
+* p.e. BlobToChar(X'23B32A333A312A',500)='Hola mundo'.
+* 
+* DataBlob 		: Blob a convertir a CHARACTER.
+* CodeCharsetId : CCSID o Id del codigo de caracteres a convertir.
+				  El CCSID debe ser el mismo en el que esta codificado la trama original del BLOB
+				  por ejemplo si es una trama de respuesta de un programa z/OS, el CCISD debe ser "500".
+*/
+CREATE FUNCTION BlobToChar(IN DataBlob BLOB, IN CodeCharsetId INTEGER) RETURNS CHARACTER
+BEGIN
+	RETURN CAST( DataBlob AS CHARACTER CCSID CodeCharsetId );
+END;
+
+
+/*
+* Permite convertir una cadena a binario.
+* p.e. CharToBinary("X'A23800'")='101000100011100000000000'.
+* DataChar 		: Cadena a convertir a BIT.  
+*/
+CREATE FUNCTION CharToBinary(IN DataChar CHARACTER) RETURNS CHARACTER
+BEGIN
+	DECLARE DataBits CHARACTER CAST( CAST( CAST( DataChar AS BLOB ) AS BIT ) AS CHARACTER );
+	RETURN SUBSTRING( DataBits FROM 3 FOR( LENGTH( DataBits ) - 3 ) );
+END;
+
+
+CREATE FUNCTION ConvertCharToBinary(IN DataChar CHARACTER) RETURNS CHARACTER
+BEGIN
+	DECLARE DataBits CHARACTER CAST( CAST( CAST( DataChar AS BLOB ) AS BIT ) AS CHARACTER );
+	RETURN SUBSTRING( DataBits FROM 3 FOR( LENGTH( DataBits ) - 3 ) );
+END;
+
+
+/*
+* Permite convertir un blob a binario.
+* p.e. BlobToBinary(X'A23800')='101000100011100000000000'.
+* DataBlob 		: Blob a convertir a BIT.    
+*/
+CREATE FUNCTION BlobToBinary(IN DataBlob CHARACTER) RETURNS CHARACTER
+BEGIN
+	DECLARE DataBits CHARACTER CAST( CAST( DataBlob AS BIT ) AS CHARACTER );
+	RETURN SUBSTRING( DataBits FROM 3 FOR( LENGTH( DataBits ) - 3 ) );
+END;
+
+
+/*CREATE FUNCTION TimeStampToChar(IN DataTS TIMESTAMP, IN TSFormat CHARACTER) RETURNS CHARACTER
+BEGIN
+	RETURN CAST(DataTS AS CHARACTER FORMAT TSFormat);
+END;
+
+CREATE FUNCTION CharToTimeStamp(IN DataTS CHARACTER, IN TSFormat CHARACTER) RETURNS TIMESTAMP
+BEGIN
+	RETURN CAST(DataTS AS TIMESTAMP FORMAT TSFormat);
+END;
+
+CREATE FUNCTION TimeToChar(IN DataTI TIME, IN TIFormat CHARACTER) RETURNS CHARACTER
+BEGIN
+	RETURN CAST(DataTI AS CHARACTER FORMAT TIFormat);
+END;
+
+CREATE FUNCTION CharToTime(IN DataTI CHARACTER, IN TIFormat CHARACTER) RETURNS TIME
+BEGIN
+	RETURN CAST(DataTI AS TIME FORMAT TIFormat);
+END;
+	 
+CREATE FUNCTION DateToChar(IN DataDT DATE, IN DTFormat CHARACTER) RETURNS CHARACTER
+BEGIN
+	RETURN CAST(DataDT AS CHARACTER FORMAT DTFormat);
+END;
+
+CREATE FUNCTION CharToDate(IN DataDT CHARACTER, IN DTFormat CHARACTER) RETURNS DATE
+BEGIN
+	RETURN CAST(DataDT AS DATE FORMAT DTFormat);
+END;*/
+
+CREATE FUNCTION GetCurrentDate(IN Format CHARACTER) RETURNS CHARACTER
+BEGIN
+	RETURN CAST(CURRENT_DATE AS CHARACTER FORMAT Format);
+END;
+/*
+ * Permite rellenar una cadena con un caracter 'x' por la izquierda o derecha.
+ *
+ *cadena: La cadena a la que se le hara el "padding".
+ *carPad: El caracter con el que se hara el "padding".
+ *longFinal: La longitud final que tendra la cadena todo y "padding".
+ *alinIzq: <TRUE> si la cadena estara alineada a la "Izquierda". Caso contrario <FALSE>.
+ *
+ * Ejemplo:
+ * Padding('0123456','0',9,TRUE)='012345600'
+ *--------------------------------------------------------------------
+ * Fecha	: 2011-01-20
+ * Autores	: Carolina Romero Pizarro
+ * Origen   : Servicio "ProdNoCardInqV1"
+ *--------------------------------------------------------------------
+ */
+CREATE FUNCTION Padding(IN cadena CHARACTER, IN carPad CHARACTER, IN longFinal INT, IN alinIzq BOOLEAN)
+RETURNS CHARACTER
+BEGIN
+	DECLARE cadenaFinal CHARACTER REPLICATE(carPad, longFinal);
+	DECLARE posIni INT 0;
+	
+	IF alinIzq THEN
+		SET posIni = 1;
+	ELSE
+		SET posIni = longFinal - LENGTH(cadena) + 1;
+	END IF;
+	
+	SET cadenaFinal = OVERLAY(cadenaFinal PLACING cadena FROM posIni FOR LENGTH(cadena));
+	
+	RETURN cadenaFinal;
+END;
+
+
+/*
+ * Permite reemplazar nulo por espacio en blanco en una trama tipo blob.
+ *
+ *trama: La cadena a la que se le reemplaza los nulos por espacios".
+ *
+ * Ejemplo:
+ * ReplaceNullHexa('0123456','0',9,TRUE)='012345600'
+ *--------------------------------------------------------------------
+ * Fecha	: 2011-01-20
+ * Autores	: MDP Consulting SAC.
+ * Origen   : Servicio "TinOnline"
+ *--------------------------------------------------------------------
+ */
+CREATE FUNCTION ReplaceNullHexa(IN trama BLOB)
+RETURNS BLOB
+BEGIN
+	DECLARE espacio BLOB X'40';
+	DECLARE newblob BLOB trama;
+	DECLARE lista ROW;
+	
+	SET lista.hex[1] = X'00';	
+	SET lista.hex[2] = X'FF';
+	SET lista.hex[3] = X'C29F';
+	SET lista.hex[4] = X'0C';
+	SET lista.hex[5] = X'03';
+	
+	FOR hex AS lista.hex[] DO
+		SET newblob = REPLACE(newblob,hex,espacio);
+	END FOR;
+	RETURN newblob;
+END;
+
+
+CREATE FUNCTION GetCurrentTimeStamp(IN Format CHARACTER)
+	RETURNS CHARACTER
+	LANGUAGE JAVA 
+	EXTERNAL NAME "pe.com.bbva.siso.Util.getCurrentTimeStamp";
+
+
+CREATE FUNCTION GetPropertyValue(IN Property CHARACTER)
+	RETURNS CHARACTER
+	LANGUAGE JAVA 
+	EXTERNAL NAME "pe.com.bbva.siso.Util.getPropertyValue";
+
+
+CREATE FUNCTION SetRenameFile(IN PathOld CHARACTER, IN PathNew CHARACTER)
+	RETURNS BOOLEAN
+	LANGUAGE JAVA 
+	EXTERNAL NAME "pe.com.bbva.siso.Util.setRenameFile";
+	

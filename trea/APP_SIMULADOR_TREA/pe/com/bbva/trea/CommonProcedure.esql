@@ -1,0 +1,459 @@
+BROKER SCHEMA pe.com.bbva.trea
+
+CREATE PROCEDURE ValidateMessageHeader(IN header REFERENCE) 
+    BEGIN
+    	CALL validarCampoFecha(header.tns1:idTransaccion, 20, 1);
+    	
+    	CALL validarCampoLongitud(header.tns1:codigoAplicacion, 10);
+    	
+    	CALL validarCampoLongitud(header.tns1:usuario, 20);
+    END;
+
+    
+CREATE PROCEDURE ValidateMessageSimulacion(IN refBody REFERENCE) 
+    BEGIN
+    	CALL validarCampoLongitud(refBody.tns1:body.tns1:codigoProducto, 2);
+    	
+    	CALL validarCampoLongitud(refBody.tns1:body.tns1:codigoSubProducto, 4);
+    	
+    	CALL validarCampoDecimal(refBody.tns1:body.tns1:montoInicial, 16, 2);
+    	
+    	CALL validarCampoLongitud(refBody.tns1:body.tns1:tipoPlazo, 1);
+    	
+    	CALL validarCampoNumerico(refBody.tns1:body.tns1:plazo, 3);
+    	
+    	CALL validarCampoDecimal(refBody.tns1:body.tns1:tasa, 7, 2);
+    	
+    	CALL validarCampoLongitud(refBody.tns1:body.tns1:liquidacionIntereses, 1);
+    END;
+    
+CREATE PROCEDURE validarCampoLongitud(	
+										IN refCampo REFERENCE, 
+										IN intLongitudMaximaCampo INTEGER
+									 )
+-- Valida la corrección de un campo alfanumerico enviado por el cliente. Si en longMaxCadena se envia 0 no se valida longitud maxima
+BEGIN
+	DECLARE chrValorCampo CHARACTER;
+	DECLARE chrNombreCampo CHARACTER;
+	DECLARE chrMensaje CHARACTER;
+	DECLARE intLongitudCadena INTEGER;
+	DECLARE intDiferenciaLongitud INTEGER;
+	
+	SET chrNombreCampo = FIELDNAME(refCampo);
+	SET chrValorCampo  = FIELDVALUE(refCampo);
+	SET intLongitudCadena = LENGTH(chrValorCampo);
+	
+	IF (intLongitudMaximaCampo < intLongitudCadena) THEN
+		SET intDiferenciaLongitud 	= (intLongitudMaximaCampo - intLongitudCadena);
+		SET chrMensaje = 	'El campo '||
+							chrNombreCampo ||
+							' excedio en '||
+							CAST(ABS(intDiferenciaLongitud) AS CHARACTER)||
+							' caracteres.';
+							
+		THROW USER EXCEPTION VALUES(3000, 'U1000', 42, chrMensaje);--MESSAGE 'U1000' VALUES (chrMensaje);
+	END IF;
+	
+END;
+
+CREATE PROCEDURE validarCampoNumerico(
+										IN refCampo REFERENCE, 
+										IN intLongitudMaximaCampo INTEGER
+								   	 )
+BEGIN	
+	DECLARE EXIT HANDLER FOR SQLSTATE LIKE '%' 
+	BEGIN
+		
+		DECLARE chrNombreCampo CHARACTER FIELDNAME(refCampo);
+		DECLARE chrValorCampo CHARACTER FIELDVALUE(refCampo);
+		DECLARE intSQLCODE INTEGER SQLCODE;
+		DECLARE chrSQLERRORTEXT CHARACTER SQLERRORTEXT;
+		
+		IF intSQLCODE <> 3000 THEN
+			SET intSQLCODE = 3001;
+			SET chrSQLERRORTEXT = 	'El campo '||
+									chrNombreCampo ||
+									' con valor '||
+									CAST(chrValorCampo AS CHARACTER)||
+									' contiene un número erróneo.';
+		END IF;
+		
+    	THROW USER EXCEPTION MESSAGE intSQLCODE VALUES (chrSQLERRORTEXT);--VALUES(3002, chrSQLSTATE, 42, chrSQLERRORTEXT);--MESSAGE chrSQLSTATE VALUES (chrSQLERRORTEXT);
+	END;
+	
+	CALL validarCampoLongitud(refCampo, intLongitudMaximaCampo);
+	
+	DECLARE chrNumero CHARACTER FIELDVALUE(refCampo);
+	
+	IF LENGTH(chrNumero) > 0 THEN
+	    DECLARE intNumero INTEGER;
+	    SET intNumero = CAST(chrNumero AS INTEGER);
+	    
+	END IF;
+END;
+
+CREATE PROCEDURE validarCampoFecha(
+									IN refCampo REFERENCE, 
+									IN intLongitudMaximaCampo INTEGER,
+									IN intFechaPatron INTEGER
+								   )
+BEGIN	
+	DECLARE EXIT HANDLER FOR SQLSTATE LIKE '%' 
+	BEGIN
+		
+		DECLARE chrNombreCampo CHARACTER FIELDNAME(refCampo);
+		DECLARE chrValorCampo CHARACTER FIELDVALUE(refCampo);
+		DECLARE intSQLCODE INTEGER SQLCODE;
+		DECLARE chrSQLERRORTEXT CHARACTER SQLERRORTEXT;
+		
+		IF intSQLCODE <> 3000 THEN
+			SET intSQLCODE = 3001;
+			SET chrSQLERRORTEXT = 	'El campo '||
+									chrNombreCampo ||
+									' con valor '||
+									CAST(chrValorCampo AS CHARACTER)||
+									' contiene una formato erróneo.';
+		END IF;
+		
+    	THROW USER EXCEPTION MESSAGE intSQLCODE VALUES (chrSQLERRORTEXT);--VALUES(3002, chrSQLSTATE, 42, chrSQLERRORTEXT);--MESSAGE chrSQLSTATE VALUES (chrSQLERRORTEXT);
+	END;
+	
+	CALL validarCampoLongitud(refCampo, intLongitudMaximaCampo);
+	
+	DECLARE chrFecha CHARACTER FIELDVALUE(refCampo);
+    DECLARE dteFecha DATE;
+    DECLARE chrPattern CHARACTER '';
+    
+    IF LENGTH(chrFecha) > 0 THEN
+	    IF intFechaPatron = 1 THEN
+	    	SET chrPattern = FORMAT_DATE1;
+	    ELSEIF intFechaPatron = 2 THEN
+	    	SET chrPattern = FORMAT_DATE2;
+	    END IF;
+	    
+		SET dteFecha = CAST(chrFecha AS DATE FORMAT chrPattern);
+		  
+    END IF;
+END;
+
+CREATE PROCEDURE validarCampoDecimal(
+										IN refCampo REFERENCE,
+										IN intLongitudMaximaCampo INTEGER,
+										IN intEscala INTEGER
+									)
+BEGIN	
+	DECLARE EXIT HANDLER FOR SQLSTATE LIKE '%' 
+	BEGIN
+		
+		DECLARE chrNombreCampo CHARACTER FIELDNAME(refCampo);
+		DECLARE chrValorCampo CHARACTER FIELDVALUE(refCampo);
+		DECLARE intSQLCODE INTEGER SQLCODE;
+		DECLARE chrSQLERRORTEXT CHARACTER SQLERRORTEXT;
+		
+		IF intSQLCODE <> 3000 THEN
+			SET intSQLCODE = 3001;
+			SET chrSQLERRORTEXT = 	'El campo '||
+									chrNombreCampo ||
+									' con valor '||
+									CAST(chrValorCampo AS CHARACTER)||
+									' contiene un número decimal erróneo.';
+		END IF;
+		
+    	THROW USER EXCEPTION MESSAGE intSQLCODE VALUES (chrSQLERRORTEXT);--VALUES(3002, chrSQLSTATE, 42, chrSQLERRORTEXT);--MESSAGE chrSQLSTATE VALUES (chrSQLERRORTEXT);
+	END;
+	
+	CALL validarCampoLongitud(refCampo, intLongitudMaximaCampo);
+	
+	DECLARE decDecimal DECIMAL FIELDVALUE(refCampo);
+    DECLARE chrDecimal CHARACTER FIELDVALUE(refCampo);
+END;
+
+/*
+* Description: Procedimiento que establece los valores de la cabecera MQMD
+* Parameters:
+* IN: RefOutputRoot REFERENCE - Referencia del OutputRoot.
+* IN: CorrelIdParam BLOB - Correlation Id.
+* IN: MsgIdParam BLOB - Message Id.
+* IN: EncodingParam INTEGER - Encoding.
+* IN: CodedCharSetIdParam INTEGER - CodedCharSetId.
+* IN: PersistenceParam INTEGER - Persistencia.
+* IN: ExpiryParam INTEGER - Expiración.
+* IN: ReplyToQ CHARACTER - Cola de respuesta.
+* IN: ReplyToQMgr CHARACTER - Queue manager de respuesta.
+*/
+CREATE PROCEDURE SetOutputRootMQHeader		   (IN RefOutputRoot 		REFERENCE, 
+												IN CorrelIdParam		BLOB, 
+												IN MsgIdParam			BLOB,												
+												IN EncodingParam		INTEGER,
+												IN CodedCharSetIdParam	INTEGER,
+												IN PersistenceParam		INTEGER,
+												IN ExpiryParam			INTEGER,
+												IN ReplyToQ 			CHARACTER,
+												IN ReplyToQMgr 			CHARACTER)
+BEGIN		
+		SET RefOutputRoot.MQMD.MsgId    		= MsgIdParam;		
+		SET RefOutputRoot.MQMD.CorrelId 		= CorrelIdParam;
+		SET RefOutputRoot.MQMD.Encoding			= EncodingParam;
+		SET RefOutputRoot.MQMD.CodedCharSetId	= CodedCharSetIdParam;
+		SET RefOutputRoot.MQMD.Persistence 		= PersistenceParam;
+		SET RefOutputRoot.MQMD.Expiry 	 		= ExpiryParam;
+		SET RefOutputRoot.MQMD.ReplyToQ			= ReplyToQ;
+		SET RefOutputRoot.MQMD.ReplyToQMgr      = ReplyToQMgr;
+			
+END;
+
+/*
+* Description: Procedimiento que establece los valores de la cabecera Properties
+* Parameters:
+* IN: RefOutputRoot REFERENCE - Referencia del OutputRoot.
+* IN: MessageSetParam CHARACTER - Message Set.
+* IN: MessageTypeParam CHARACTER - Message Type.
+* IN: MessageFormatParam CHARACTER - Message Format.
+* IN: EncodingParam INTEGER - Encoding.
+* IN: CodedCharSetIdParam INTEGER - CodedCharSetId.
+* IN: PersistenceParam BOOLEAN - Persistencia.
+* IN: ExpirationTimeParam CHARACTER - Expiración.
+*/
+CREATE PROCEDURE SetOutputRootPropertiesHeader (IN RefOutputRoot 		REFERENCE, 
+												IN MessageSetParam 		CHARACTER, 
+												IN MessageTypeParam 	CHARACTER,
+												IN MessageFormatParam 	CHARACTER,
+												IN EncodingParam		INTEGER,
+												IN CodedCharSetIdParam	INTEGER,
+												IN PersistenceParam		BOOLEAN,
+												IN ExpirationTimeParam	INTEGER)
+BEGIN
+		SET RefOutputRoot.Properties.MessageSet 	= MessageSetParam;
+		SET RefOutputRoot.Properties.MessageType 	= MessageTypeParam;
+		SET RefOutputRoot.Properties.MessageFormat 	= MessageFormatParam;
+		SET RefOutputRoot.Properties.Persistence	= PersistenceParam;
+		SET RefOutputRoot.Properties.Encoding		= EncodingParam;
+		SET RefOutputRoot.Properties.CodedCharSetId = CodedCharSetIdParam;
+		SET RefOutputRoot.Properties.ExpirationTime = ExpirationTimeParam;
+END;
+
+CREATE PROCEDURE SetRequestMQAdapterPS9(IN RefOutput	   REFERENCE,
+										IN CdTransaccion   CHARACTER,
+										IN TramaRq         CHARACTER
+									   )
+BEGIN	
+	    DECLARE terminalLogico CHARACTER C_EMPTY_CHARACTER;
+	    
+	    -- CALL GetTerminalLogico(terminalLogico);
+        SET RefOutput.IH.IdentificadorProtocolo = C_IDENTIFICACION_PROTOCOLO_PS9_IH_HOST;
+        -- SET RefOutput.IH.TerminalLogico         = terminalLogico;  --pendiente!
+        SET RefOutput.IH.TerminalLogico         = C_TERMINAL_LOGICO_PS9_IH_HOST;
+        SET RefOutput.IH.TerminalContable       = C_TERMINAL_CONTABLE_PS9_IH_HOST;
+        SET RefOutput.IH.Usuario                = C_USUARIO_PROTOCOLO_PS9_IH_HOST;
+        SET RefOutput.IH.NumeroSecuencia        = C_NUMERO_SECUENCIA_PS9_IH_HOST;
+        SET RefOutput.IH.CodigoTransaccion      = CdTransaccion;
+        SET RefOutput.IH.OpcionAplicacion       = C_OPCION_APLICACION_USER_PS9_IH_HOST;
+        SET RefOutput.IH.LongitudTrama          = LENGTH(TramaRq) + C_TAMANIO_PS9_TAG_IH + C_TAMANIO_PS9_TAG_ME;
+        SET RefOutput.IH.IndicadorCommit        = C_INDICADOR_COMMIT_PROTOCOLO_PS9_IH_HOST;
+        SET RefOutput.IH.TipoMensaje            = C_TIPO_MENSAJE_PROTOCOLO_PS9_IH_HOST;
+        SET RefOutput.IH.TipoProceso            = C_TIPO_PROCESO_PROTOCOLO_PS9_IH_HOST;
+        SET RefOutput.IH.CanalComunicacion      = C_CANAL_COMUNICACION_PS9_IH_HOST;
+        SET RefOutput.IH.IndicadorPreformato    = C_INDICADOR_PREFORMATO_PROTOCOLO_PS9_IH_HOST;
+        SET RefOutput.IH.Lenguaje               = C_LENGUAJE_PROTOCOLO_PS9_IH_HOST;
+        SET RefOutput.ME.Longitud               = LENGTH(TramaRq);
+        SET RefOutput.ME.TipoFormato            = C_TIPO_FORMATO_PROTOCOLO_PS9_IH_HOST;
+        SET RefOutput.ME.Mensaje                = TramaRq;
+        
+        /* -- Configuracion Simulador Trea Old 
+        SET refRoot.Header.IdentificacionProtocolo = getIdentificadorProtocolo();--'26';
+		SET refRoot.Header.TerminalLogico 		   = getTerminalLogico();--'%W10';
+		SET refRoot.Header.TerminalContable 	   = getTerminalContable();--'%W10';
+		SET refRoot.Header.Usuario 				   = getUsuario();--'UCQGPSPT';
+		SET refRoot.Header.NumeroSecuencia 		   = getNumeroSecuencia();--'10010149';
+		SET refRoot.Header.CodigoTransaccion 	   = getCodeTransaction(InputRoot.XMLNSC.Request.Header.operacion);
+		SET refRoot.Header.OpcionAplicacion 	   = getOpcionAplicacion();--'00';
+		SET refRoot.Header.LongitudTrama 		   = 65 + 14 + intLongitud;
+		SET refRoot.Header.IndicadorCommit 		   = getIndicadorCommit();--'1';
+		SET refRoot.Header.TipoMensaje 			   = getTipoMensaje();--'1';
+		SET refRoot.Header.TipoProceso 			   = getTipoProceso();--'O';
+		SET refRoot.Header.CanalComunicacion 	   = getCanalComunicacion();--'PF';
+		SET refRoot.Header.IndicadorPreformato 	   = getIndicadorPreformato();--'S';
+		SET refRoot.Header.Lenguaje 			   = getLenguaje();--'R';
+		
+		CREATE LASTCHILD OF refRoot NAME 'Data';
+		SET refRoot.Data.LongitugData = intLongitud;
+		SET refRoot.Data.TipoData 	  = 'C';
+		SET refRoot.Data.TramaData    = InputRoot.XMLNSC.Request.Body.Trama;
+		*/ 
+END;
+ 
+/*
+* Description: Procedimiento que establece el destino de un nodo MQOutput
+* Parameters:
+* IN: QueueNameParam CHARACTER -  es el nombre de la cola destino.
+* IN: QueueManagerNameParam CHARACTER -  es el nombre del queue manager destino.
+* IN: RefLocalEnv REFERENCE -  es la referencia al LocalEnvironment.
+*/
+CREATE PROCEDURE SetDestinationMQParam ( IN QueueNameParam 			CHARACTER, 
+										 IN QueueManagerNameParam 	CHARACTER,
+										 IN RefLocalEnv 			REFERENCE
+										 )
+BEGIN
+	    SET RefLocalEnv.Destination.MQ.DestinationData.queueName 		= QueueNameParam;
+		SET RefLocalEnv.Destination.MQ.DestinationData.queueManagerName = QueueManagerNameParam;
+END;
+
+/*
+Description: Procedimiento almacenado que registra la auditoria de un evento.
+*/
+CREATE PROCEDURE GetTerminalLogico(OUT O_TERMINAL CHARACTER)
+LANGUAGE DATABASE
+EXTERNAL NAME ".PG_TI_UTIL.PR_GET_TERMINAL_TINONLINE";  		
+
+CREATE PROCEDURE SplitString (IN S CHARACTER, IN Env REFERENCE, IN Delim CHARACTER) 
+BEGIN 
+   DECLARE P INTEGER; 
+   DECLARE Idx INTEGER 1; 
+
+   SET Env.Split = NULL; 
+
+   REPEAT 
+      SET P = POSITION(Delim IN S); 
+      IF P = 0 THEN 
+         SET Env.Split.Array[Idx] = S; 
+      ELSE 
+         SET Env.Split.Array[Idx] = LEFT(S, P - 1); 
+         SET S = SUBSTRING(S FROM P + LENGTH(Delim)); 
+         SET Idx = Idx + 1; 
+      END IF; 
+  UNTIL P = 0    
+  END REPEAT;    
+END;
+
+/*
+* Description: Procedimiento que parsea un tipo de dato blob a un dominio en específico
+* Parameters:
+* IN: RefRoot REFERENCE -  es la referencia al root del mensaje de salida.
+* IN: MsgDomain CHARACTER - es el dominio del mensaje
+* IN: MsgBodyBlob CHARACTER - es el cblob que se desea parsear
+* IN: MsgSet CHARACTER - message set del mensaje de salida
+* IN: MsgType CHARACTER - message type del mensaje de salida
+* IN: MsgFormat CHARACTER - message format del mensaje de salida
+* IN: MsgEncoding CHARACTER - encoding del mensaje de salida
+* IN: MsgCCSID CHARACTER - codedcharsetid del mensaje de salida
+*/
+CREATE PROCEDURE ParseBlobToRootDomain(		IN RefRoot 		REFERENCE, 
+										  	IN MsgDomain	CHARACTER,										
+										  	IN MsgBodyBlob	BLOB,
+										    IN MsgSet		CHARACTER, 
+										    IN MsgType		CHARACTER,
+										    IN MsgFormat	CHARACTER,
+										    IN MsgEncoding	INTEGER,
+										    IN MsgCCSID		INTEGER	)
+BEGIN
+	 CREATE LASTCHILD OF RefRoot DOMAIN(MsgDomain) 	PARSE( 	MsgBodyBlob
+													  SET 	COALESCE(MsgSet,		C_EMPTY_CHARACTER)
+													 TYPE 	COALESCE(MsgType,		C_EMPTY_CHARACTER)
+												   FORMAT 	COALESCE(MsgFormat,		C_EMPTY_CHARACTER)
+												 ENCODING 	COALESCE(MsgEncoding,	0)
+													CCSID 	COALESCE(MsgCCSID,		0)
+												  OPTIONS 	ValidateImmediate);		
+END;
+
+
+/*
+* Description: Procedimiento que parsea un caracter de mensaje a un dominio en específico
+* Parameters:
+* IN: RefRoot REFERENCE -  es la referencia al root del mensaje de salida.
+* IN: MsgDomain CHARACTER - es el dominio del mensaje
+* IN: MsgBodyChar CHARACTER - es el caracter que se desea parsear
+* IN: MsgSet CHARACTER - message set del mensaje de salida
+* IN: MsgType CHARACTER - message type del mensaje de salida
+* IN: MsgFormat CHARACTER - message format del mensaje de salida
+* IN: MsgEncoding CHARACTER - encoding del mensaje de salida
+* IN: MsgCCSID CHARACTER - codedcharsetid del mensaje de salida
+*/
+CREATE PROCEDURE ParseCharacterToRootDomain(IN RefRoot 		REFERENCE, 
+										  	IN MsgDomain	CHARACTER,										
+										  	IN MsgBodyChar	CHARACTER,
+										    IN MsgSet		CHARACTER, 
+										    IN MsgType		CHARACTER,
+										    IN MsgFormat	CHARACTER,
+										    IN MsgEncoding	INTEGER,
+										    IN MsgCCSID		INTEGER	)
+BEGIN
+	 CREATE LASTCHILD OF RefRoot DOMAIN(MsgDomain) 	PARSE( 	MsgBodyChar
+													  SET 	COALESCE(MsgSet,		C_EMPTY_CHARACTER)
+													 TYPE 	COALESCE(MsgType,		C_EMPTY_CHARACTER)
+												   FORMAT 	COALESCE(MsgFormat,		C_EMPTY_CHARACTER)
+												 ENCODING 	COALESCE(MsgEncoding,	0)
+													CCSID 	COALESCE(MsgCCSID,		0)
+												  OPTIONS 	ValidateImmediate);		
+END;
+
+CREATE PROCEDURE SetResponseSimulacionMsg(
+	IN   RefOutput     REFERENCE,
+	IN   RefCopyRs     REFERENCE,
+	IN   refEnv 	   REFERENCE,
+	IN   intCCSID	   INTEGER,
+	IN   intEncoding   INTEGER
+)
+BEGIN      	 	
+	DECLARE chrMensaje CHARACTER EMPTY_CHARACTER;
+	DECLARE refMensaje REFERENCE TO RefCopyRs.B4254_OUT_LIST.B4254_OUT[1];
+	WHILE LASTMOVE(refMensaje) DO
+		SET chrMensaje = chrMensaje || refMensaje.N4254_MENSAJE;
+		MOVE refMensaje NEXTSIBLING REPEAT TYPE NAME;
+	END WHILE;
+	
+	-- CREATE LASTCHILD OF RefOutput DOMAIN 'XMLNSC' NAME 'XMLNSC';
+	CREATE LASTCHILD OF RefOutput DOMAIN 'SOAP';
+	CREATE LASTCHILD OF RefOutput.SOAP TYPE Name NAME 'Body';
+	CREATE LASTCHILD OF RefOutput.SOAP.Body TYPE Name NAMESPACE tns1 NAME 'responseSimulacion';
+	DECLARE refResponse REFERENCE TO RefOutput.SOAP.Body.tns1:responseSimulacion; 
+	DECLARE refTagDatos REFERENCE TO RefOutput;	 
+
+	CREATE LASTCHILD OF refResponse AS refTagDatos TYPE Name NAMESPACE tns1 NAME 'body';	 	
+	CREATE LASTCHILD OF refTagDatos NAMESPACE tns1 NAME 'datosGenerales';
+	SET refTagDatos.tns1:datosGenerales.tns1:producto 		       = RefCopyRs.B4251_OUT.N4251_PRODUCT;
+	SET refTagDatos.tns1:datosGenerales.tns1:subProducto 		   = RefCopyRs.B4251_OUT.N4251_SUBPRO;
+	SET refTagDatos.tns1:datosGenerales.tns1:codigoMoneda 	       = RefCopyRs.B4253_OUT.N4253_DIVSME;
+	SET refTagDatos.tns1:datosGenerales.tns1:descripcionMoneda     = RefCopyRs.B4251_OUT.N4251_DIVISA;
+	SET refTagDatos.tns1:datosGenerales.tns1:simboloMoneda 	       = obtenerSimboloMoneda(COALESCE(RefCopyRs.B4253_OUT.N4253_DIVSME,EMPTY_CHARACTER));
+	SET refTagDatos.tns1:datosGenerales.tns1:cargo 			       = RefCopyRs.B4251_OUT.N4251_CARGOS;
+	SET refTagDatos.tns1:datosGenerales.tns1:periodoLiquidacion    = RefCopyRs.B4251_OUT.N4251_PERLIQ;
+	SET refTagDatos.tns1:datosGenerales.tns1:mensaje 		       = chrMensaje;
+	SET refTagDatos.tns1:datosGenerales.tns1:montoInicial 	       = RefCopyRs.B4252_OUT_LIST.B4252_OUT[1].N4252_MONTOIN;			
+	SET refTagDatos.tns1:datosGenerales.tns1:trea 			       = RefCopyRs.B4253_OUT.N4253_TREA;
+	SET refTagDatos.tns1:datosGenerales.tns1:tea 				   = RefCopyRs.B4253_OUT.N4253_TEA;
+	SET refTagDatos.tns1:datosGenerales.tns1:sme 				   = RefCopyRs.B4253_OUT.N4253_SME;			
+	SET refTagDatos.tns1:datosGenerales.tns1:franquicia 		   = RefCopyRs.B4253_OUT.N4253_FRANQ;
+	SET refTagDatos.tns1:datosGenerales.tns1:anulacionFranquicia   = RefCopyRs.B4253_OUT.N4253_ANULFRA;
+			
+	CREATE LASTCHILD OF refTagDatos NAMESPACE tns1 NAME 'listaDetalle';
+	DECLARE refItemOut REFERENCE TO RefCopyRs.B4252_OUT_LIST.B4252_OUT[1];
+	DECLARE refItem REFERENCE TO refEnv;
+	DECLARE decTotalIntereses DECIMAL 0;
+	WHILE LASTMOVE(refItemOut) DO
+		CREATE LASTCHILD OF refTagDatos.tns1:listaDetalle AS refItem NAMESPACE tns1 NAME 'detalle';
+		SET refItem.tns1:mes     = refItemOut.N4252_SECUENC;
+		SET refItem.tns1:monto   = refItemOut.N4252_MONTOIN;
+		SET refItem.tns1:interes = refItemOut.N4252_TOTINT;
+		SET refItem.tns1:cargo   = refItemOut.N4252_CARGOS;
+		SET refItem.tns1:saldo   = refItemOut.N4252_SALDO;	
+		SET decTotalIntereses    = decTotalIntereses + CAST(TRIM(refItemOut.N4252_TOTINT) AS DECIMAL FORMAT '#,##0.00');
+		MOVE refItemOut NEXTSIBLING REPEAT TYPE NAME;
+	END WHILE;
+	SET refTagDatos.tns1:datosGenerales.tns1:totalIntereses = decTotalIntereses;
+
+	END;
+	
+CREATE PROCEDURE SetResponseCatalogoMsg(
+	IN   RefOutput     REFERENCE,
+	IN   RefCopyRs     REFERENCE,
+	IN   refEnv 	   REFERENCE,
+	IN   intCCSID	   INTEGER,
+	IN   intEncoding   INTEGER
+)
+BEGIN      	 		
+
+	CREATE LASTCHILD OF RefOutput DOMAIN 'SOAP';
+	CREATE LASTCHILD OF RefOutput.SOAP TYPE Name NAME 'Body';
+	CREATE LASTCHILD OF RefOutput.SOAP.Body TYPE Name NAMESPACE tns1 NAME 'responseCatalogo';
+
+END; 

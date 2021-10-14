@@ -1,0 +1,344 @@
+BROKER SCHEMA pe.com.bbva.trea
+
+DECLARE QMName 							   EXTERNAL CHARACTER C_EMPTY_CHARACTER;
+DECLARE C_REPLYTOQ_MSJ_MQ_HOST             EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;
+DECLARE C_PREFIJO_ALIAS_QMGR_PRE           EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;
+DECLARE C_PREFIJO_ALIAS_QMGR_POST          EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;
+DECLARE C_COLA_MQ_ENVIO_HOST               EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER; -- definir en userVariables 
+DECLARE C_QMGR_MQ_ENVIO_HOST               EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;  -- definir en userVariables 
+DECLARE C_COLA_MQ_RESPUESTA_HOST           EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;  -- definir en userVariables 
+DECLARE C_USUARIO_PROTOCOLO_PS9_IH_HOST    EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;
+DECLARE C_TERMINAL_CONTABLE_PS9_IH_HOST    EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;
+
+
+CREATE COMPUTE MODULE DoXMLToCWF
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+				   
+		-- Validacion de header para ambas operaciones. "ObtenerCatalogo" y "ObtenerSimulacion"
+		CALL ValidateMessageHeader(InputBody.*[1].tns1:header);
+		 
+		DECLARE rowCopyRq   ROW;  
+		DECLARE refInput    REFERENCE TO InputBody;
+		DECLARE refOutput   REFERENCE TO OutputRoot;
+		DECLARE refEnvVar   REFERENCE TO Environment.Variables;
+		 
+        CREATE LASTCHILD OF rowCopyRq DOMAIN GET_MESSAGE_DOMAIN_MRM() NAME 'ROOT';
+		DECLARE refEnvelope REFERENCE TO InputLocalEnvironment.SOAP.Envelope;
+		
+		DECLARE operacion CHARACTER refEnvelope.SOAP.Context.operation;
+		DECLARE C_MESSAGE_TYPE CHARACTER '';
+		
+		SET refEnvVar.Service.RequestOriginal = InputBody;
+		SET refEnvVar.Service.IdentificadorRespuesta = COALESCE(InputLocalEnvironment.Destination.SOAP.Reply.ReplyIdentifier, 'NO OBTENIDO');
+		SET refEnvVar.Service.Operacion = operacion;
+		SET OutputRoot.Properties.MessageSet    = C_MESSAGE_SET_SIMULADOR_TREA;
+		SET OutputRoot.Properties.MessageFormat = C_MESSAGE_FORMAT;
+
+		IF operacion = OPERATION_SIMULACION THEN
+			
+			DECLARE refInSimulacion REFERENCE TO refInput.tns1:requestSimulacion;
+			SET refEnvVar.Service.idTransaccion = COALESCE(refInSimulacion.tns1:header.tns1:idTransaccion, '');
+			SET C_MESSAGE_TYPE = C_MESSAGE_TYPE_OBTENER_SIMULACION;
+			CALL ValidateMessageSimulacion(refInSimulacion);
+			
+		    SET rowCopyRq.ROOT.N425_PRODUCT = refInSimulacion.tns1:body.tns1:codigoProducto;
+		    SET rowCopyRq.ROOT.N425_SUBPROD = refInSimulacion.tns1:body.tns1:codigoSubProducto;
+		    SET rowCopyRq.ROOT.N425_MONTOIN = CAST(CAST(refInSimulacion.tns1:body.tns1:montoInicial AS DECIMAL) AS CHARACTER);
+		    SET rowCopyRq.ROOT.N425_TPPLAZO = refInSimulacion.tns1:body.tns1:tipoPlazo;
+		    SET rowCopyRq.ROOT.N425_PLAZO   = CAST(refInSimulacion.tns1:body.tns1:plazo AS CHARACTER);
+		    SET rowCopyRq.ROOT.N425_TASA    = CAST(CAST(refInSimulacion.tns1:body.tns1:tasa AS DECIMAL) AS CHARACTER);
+			SET rowCopyRq.ROOT.N425_ABOINT  = refInSimulacion.tns1:body.tns1:liquidacionIntereses;
+			
+			/*
+			SET OutputRoot.XMLNSC.Request.Body.Trama = CAST( ASBITSTREAM ( 
+										      OutputRoot.MRM, ,
+											  InputRoot.Properties.CodedCharSetId,
+											  'MS_MB_SIST_BBVA_CONSULTA',
+											  'msg_BGNC425',
+									 	 	  'Binary1', RootBitStream ) AS CHARACTER CCSID InputRoot.Properties.CodedCharSetId );*/ 
+			
+		ELSEIF operacion = OPERATION_CATALAGO THEN
+		    DECLARE refInCatalogo REFERENCE TO refInput.tns1:requestCatalogo;
+			SET refEnvVar.Service.idTransaccion = COALESCE(refInCatalogo.tns1:header.tns1:idTransaccion, '');
+		    SET C_MESSAGE_TYPE = C_MESSAGE_TYPE_OBTENER_CATALOGO;
+		    
+		    -- al parecer estos valores tienen parametria 
+		    SET rowCopyRq.ROOT.MTG004_CDTABLA  = '0724'; --'0724'; 
+			SET rowCopyRq.ROOT.MTG004_CLAVBAN  = '0011'; --'0011';
+			SET rowCopyRq.ROOT.MTG004_CLAVTG   = '0011'; -- que es esto???? 
+			SET rowCopyRq.ROOT.MTG004_TCCIDIOM = 'R';    --'R';
+			
+			/*
+			SET OutputRoot.XMLNSC.Request.Body.Trama = CAST( ASBITSTREAM ( 
+										      OutputRoot.MRM, ,
+											  InputRoot.Properties.CodedCharSetId,
+											  'MS_MB_SIST_BBVA_CONSULTA',
+											  'msg_MTG004',
+									 	 	  'Binary1', RootBitStream ) AS CHARACTER CCSID InputRoot.Properties.CodedCharSetId );			
+			*/		
+		END IF;
+		
+		--Se configura el formato MQ de salida
+		SET OutputRoot.MQMD.Format  = MQFMT_STRING;
+		SET OutputRoot.MQMD.Version = 2;
+		  
+		CALL SetOutputRootMQHeader(OutputRoot,
+								   Environment.Variables.Context.RqID,-- correlid --pendiente!
+								   Environment.Variables.Context.RqID, -- messageid --pendiente!
+								   InputRoot.Properties.Encoding, 
+								   InputRoot.Properties.CodedCharSetId,
+								   C_PERSISTENCE_MSJ_MQ_HOST,
+								   C_EXPIRY_TIME_MSJ_MQ_HOST,
+								   C_COLA_MQ_RESPUESTA_HOST, -- ACA DE BE IR MI COLA LOCAL --pendiente! 
+								   'RL01.TMDW1'); --pendiente! --debe ser variable de entorno alias  
+		
+		--Se configura las propiedades de salida.
+		CALL SetOutputRootPropertiesHeader(OutputRoot,
+										   C_MESSAGE_SET_ADAPTER_HOST,
+										   C_MESSAGE_TYPE_ADAPTER_PS9_RQ,
+										   C_MESSAGE_FORMAT_TDS,
+										   InputRoot.Properties.Encoding,
+										   InputRoot.Properties.CodedCharSetId,
+										   C_PERSISTENCE_MSJ_MB_HOST,
+										   C_EXPIRY_TIME_MSJ_MQ_HOST);  
+		
+		--Se cre el mensaje adaptador Request PS9 Host  
+		CREATE LASTCHILD OF OutputRoot DOMAIN GET_MESSAGE_DOMAIN_MRM() NAME 'MRM';
+		
+		-- Parseo a BLOB
+		SET Environment.TRAMA = CAST(ConvertReferenceToBitStream(rowCopyRq.ROOT,
+					    										 C_MESSAGE_SET_SIMULADOR_TREA,
+					    										 C_MESSAGE_TYPE,
+					    										 C_MESSAGE_FORMAT_TDS,
+					    										 C_NUMBER_ZERO,
+					    										 InputProperties.CodedCharSetId) AS CHARACTER CCSID InputRoot.Properties.CodedCharSetId); 
+		
+	
+		DECLARE codigoTransaccion CHARACTER getCodeTransaction(operacion); 
+		CALL SetRequestMQAdapterPS9(OutputRoot.MRM, codigoTransaccion, Environment.TRAMA); 
+				
+		  						   
+		--Se establece el destino del mensaje MQ
+		CALL SetDestinationMQParam(C_COLA_MQ_ENVIO_HOST, C_QMGR_MQ_ENVIO_HOST, OutputLocalEnvironment); --pendiente! 
+								   
+		--Se establece la cola de respuesta y el timeout
+		SET OutputLocalEnvironment.MQ.GET.QueueName			 = C_COLA_MQ_RESPUESTA_HOST;-- pendiente! --QRT.SIMPRES.RESP.QMPTSIMP 
+		SET OutputLocalEnvironment.MQ.GET.MQGMO.WaitInterval = C_TIMEOUT_MQ_ENVIO_HOST;  
+			 		    											   		    											  
+		-- 3) que ccsid y encoding debo usar? 
+						    											  
+		
+		RETURN TRUE;
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+		SET OutputRoot = InputRoot;
+	END;
+END MODULE;
+
+CREATE COMPUTE MODULE DoCWFToXML
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN	 
+		--INICIO 
+		DECLARE refEnvVar REFERENCE TO Environment.Variables;
+		DECLARE operacion CHARACTER Environment.Service.Operacion;
+		DECLARE dataBlob  BLOB ReplaceNullHexa(InputRoot.BLOB.BLOB);  
+		DECLARE refHeader REFERENCE TO Environment.Variables.Header;
+		DECLARE rowCopyPs9Rs ROW;
+		
+	    CALL ParseBlobToRootDomain(rowCopyPs9Rs,
+	        					   GET_MESSAGE_DOMAIN_MRM(),
+	        					   CAST(CAST(dataBlob AS CHARACTER CCSID InputProperties.CodedCharSetId) AS BLOB CCSID InputProperties.CodedCharSetId),
+	        					   C_MESSAGE_SET_ADAPTER_HOST,
+	        					   C_MESSAGE_TYPE_ADAPTER_PS9_RS,
+	        					   C_MESSAGE_FORMAT_TDS,
+	        					   C_NUMBER_ZERO,
+	        					   InputRoot.Properties.CodedCharSetId);
+	    
+	    DECLARE refCopyPs9Rs REFERENCE TO rowCopyPs9Rs.MRM;
+	    SET Environment.COPY.PS9 = refCopyPs9Rs;
+	    
+	    -- CALL generarPS9RsParams();
+	     	
+		--Generación de parametros response		
+		DECLARE chrTipoRespuesta 	CHARACTER EMPTY_CHARACTER;
+		-- DECLARE chrTipoMensaje 		CHARACTER EMPTY_CHARACTER;
+		DECLARE chrTagAviso 		CHARACTER EMPTY_CHARACTER; 
+		DECLARE chrCodigoRespuesta  CHARACTER EMPTY_CHARACTER;
+		DECLARE chrMensajeRespuesta CHARACTER EMPTY_CHARACTER;
+		DECLARE chrTramaRespuesta   CHARACTER EMPTY_CHARACTER;
+		DECLARE intNumeroIteracion  INTEGER 0;
+		DECLARE chrEstadoIteracion  CHARACTER EMPTY_CHARACTER;
+				
+		IF FIELDNAME(refCopyPs9Rs.OH) IS NOT NULL THEN 		
+		   SET chrTipoRespuesta = TRIM(COALESCE(refCopyPs9Rs.OH.RespuestaTransaccion, EMPTY_CHARACTER));
+		END IF; 
+
+		--IF FIELDNAME(refRoot.MRM.OutPS9.Conversacional) IS NOT NULL THEN 		
+		--   SET chrTipoMensaje = RESPONSE_TYPE_CONVERSATIONAL();
+		--ELSE
+		--   SET chrTipoMensaje = RESPONSE_TYPE_TRANSACTIONAL();
+		--END IF;  
+		
+		IF FIELDNAME(refCopyPs9Rs.AV) IS NOT NULL THEN 		
+		   SET chrTagAviso = TRIM(COALESCE(refCopyPs9Rs.AV.VariablesAviso, EMPTY_CHARACTER));
+		END IF; 
+		
+		IF chrTipoRespuesta = RESPONSE_MSG_SUCCESS() THEN
+		   SET chrCodigoRespuesta  = CODE_MSG_SUCCESS();
+		   SET chrMensajeRespuesta = TITLE_MSG_SUCCESS(); 	
+		ELSE
+		   IF FIELDNAME(refCopyPs9Rs.ER) IS NOT NULL THEN
+		   	  SET chrCodigoRespuesta  = refCopyPs9Rs.ER.CodigoError;
+		      SET chrMensajeRespuesta = refCopyPs9Rs.ER.VariablesError;
+		   ELSE
+			  SET chrCodigoRespuesta  = CODE_MSG_ERROR();
+			  SET chrMensajeRespuesta = TITLE_MSG_ERROR(); 		   	   	
+		   END IF; 		
+		END IF;
+		
+		/*
+		IF chrTipoMensaje = RESPONSE_TYPE_CONVERSATIONAL() THEN
+		   SET intNumeroIteracion = COALESCE(OutputRoot.XMLNSC.Response.Header.NumeroIteracion, 0) + 1;
+		   IF chrTagAviso = TAG_FIN_DATOS() THEN
+		   	  SET chrEstadoIteracion = STATUS_MSG_COMPLETED();
+		   ELSE
+		   	  SET chrEstadoIteracion = STATUS_MSG_PENDING();
+		   END IF;
+		ELSE
+		   SET chrEstadoIteracion = STATUS_MSG_COMPLETED();  
+	END IF;*/ 
+		
+		/*		
+		DECLARE refOutput REFERENCE TO OutputRoot.XMLNSC;
+		IF FIELDNAME(refOutput.Response) IS NULL THEN 
+		   CREATE LASTCHILD OF refOutput NAME 'Response';
+		   CREATE LASTCHILD OF refOutput.Response NAME 'Header';
+		   CREATE LASTCHILD OF refOutput.Response NAME 'Body';
+	END IF;*/     
+		
+		-- SET refOutput.Response.Header.TipoRespuesta = chrTipoRespuesta;
+		-- SET refOutput.Response.Header.TipoMensaje   = chrTipoMensaje;
+		-- SET refOutput.Response.Header.CodigoRespuesta  = chrCodigoRespuesta;
+		-- SET refOutput.Response.Header.MensajeRespuesta = chrMensajeRespuesta;
+		-- SET refOutput.Response.Header.NumeroIteracion  = intNumeroIteracion;
+		-- SET refOutput.Response.Header.EstadoIteracion  = chrEstadoIteracion;
+		-- SET refOutput.Response.Body.Trama = CAST(newBlob AS CHARACTER CCSID InputRoot.Properties.CodedCharSetId);
+		
+		/*IF chrTipoMensaje = RESPONSE_TYPE_CONVERSATIONAL() THEN
+		   SET refOutput.Response.Body.Datos1 = refRoot.MRM.OutPS9.Conversacional;	
+		ELSE
+		   SET refOutput.Response.Body.Datos1 = refRoot.MRM.OutPS9.Data;
+	END IF;*/ 
+
+	    DECLARE rowXMLRequrimientoRs ROW;
+		DECLARE rowCopyRequerimientoRs ROW;
+  		
+	    IF operacion = OPERATION_SIMULACION THEN
+	    	
+	    	DECLARE mensaje CHARACTER '';
+			DECLARE refTrama REFERENCE TO refCopyPs9Rs.LS1.OC[1];
+			WHILE LASTMOVE(refTrama) DO 
+				IF FIELDVALUE(refTrama.NombreFormato) = 'BGM4251 ' THEN
+					SET mensaje = COALESCE(mensaje, EMPTY_CHARACTER) || refTrama.Mensaje || '[B425]';
+					   
+				ELSEIF FIELDVALUE(refTrama.NombreFormato) = 'BGM4252 ' THEN
+					SET mensaje = COALESCE(mensaje, EMPTY_CHARACTER) || refTrama.Mensaje;
+					   				   
+				ELSEIF FIELDVALUE(refTrama.NombreFormato) = 'BGM4253 ' THEN
+					SET mensaje = COALESCE(mensaje, EMPTY_CHARACTER) || '[B425]' || refTrama.Mensaje || '[B425]';
+					
+				ELSEIF FIELDVALUE(refTrama.NombreFormato) = 'BGM4254 ' THEN
+					SET mensaje = COALESCE(mensaje, EMPTY_CHARACTER) || refTrama.Mensaje;
+					   	
+				END IF;	  
+				MOVE refTrama NEXTSIBLING REPEAT TYPE NAME;
+			END WHILE;
+			 
+			SET Environment.Variables.MENSAJE = COALESCE(mensaje, 'NADA');
+	    		
+			CALL ParseCharacterToRootDomain(rowCopyRequerimientoRs,
+    										GET_MESSAGE_DOMAIN_MRM(),
+    										CAST(mensaje AS CHARACTER CCSID InputProperties.CodedCharSetId),
+    										C_MESSAGE_SET_SIMULADOR_TREA,
+    										C_MESSAGE_TYPE_OBTENER_SIMULACION_OUT, 
+    										C_MESSAGE_FORMAT_TDS,
+    										InputProperties.Encoding,
+    										InputProperties.CodedCharSetId);
+    										
+    		SET Environment.COPY.HOST_RS =  rowCopyRequerimientoRs;
+    		
+    		DECLARE refCopyRequerimientoRs REFERENCE TO rowCopyRequerimientoRs.MRM;
+	    	 
+	    	CALL SetResponseSimulacionMsg(rowXMLRequrimientoRs, refCopyRequerimientoRs, Environment, refHeader.CodedCharSetId, refHeader.Encoding);
+	    	   
+	    ELSEIF operacion = OPERATION_CATALAGO THEN
+	    	/*
+	    	CALL ParseCharacterToRootDomain(rowCopyRequerimientoRs,
+    										GET_MESSAGE_DOMAIN_MRM(),
+    										CAST(mensaje AS CHARACTER CCSID InputProperties.CodedCharSetId),
+    										C_MESSAGE_SET_SIMULADOR_TREA,
+    										C_MESSAGE_TYPE_OBTENER_SIMULACION_OUT, 
+    										C_MESSAGE_FORMAT_TDS,
+    										InputProperties.Encoding,
+    										InputProperties.CodedCharSetId);*/ 
+    										
+    		--SET Environment.COPY.HOST_RS =  rowCopyRequerimientoRs;
+    		
+    		DECLARE refCopyRequerimientoRs REFERENCE TO /*rowCopyRequerimientoRs.MRM*/ Environment;
+    										
+    		SET Environment.COPY.HOST_RS =  rowCopyRequerimientoRs;
+    		CALL SetResponseCatalogoMsg(rowXMLRequrimientoRs, refCopyRequerimientoRs, Environment, refHeader.CodedCharSetId, refHeader.Encoding);
+	    		
+		END IF; 
+		
+		SET Environment.Variables.RsSoap = rowXMLRequrimientoRs;  
+		
+		DECLARE chrElementResponse CHARACTER getElementResponse(operacion);
+		SET OutputLocalEnvironment.Destination.SOAP.Reply.ReplyIdentifier = CAST(Environment.IdentificadorRespuesta AS BLOB);
+		   	 
+	    -- Se estable el dominio XMLNSC con el mensaje de salida
+	    CREATE LASTCHILD OF OutputRoot DOMAIN 'SOAP';
+		CREATE LASTCHILD OF OutputRoot.SOAP TYPE Name NAME 'Body' ;
+		DECLARE refBody REFERENCE TO OutputRoot.SOAP.Body;
+	    SET refBody = rowXMLRequrimientoRs.SOAP.Body;
+	    
+	    CREATE LASTCHILD OF refBody.tns1:{chrElementResponse} TYPE Name NAMESPACE tns1 NAME 'header';
+		SET refBody.tns1:{chrElementResponse}.tns1:header.tns1:idTransaccion    = refEnvVar.Service.idTransaccion; 
+		SET refBody.tns1:{chrElementResponse}.tns1:header.tns1:codigoRespuesta  = chrCodigoRespuesta;
+		SET refBody.tns1:{chrElementResponse}.tns1:header.tns1:mensajeRespuesta = chrMensajeRespuesta;
+		
+		--IF refInput.Response.Header.TipoRespuesta = RESPONSE_MSG_SUCCESS() THEN
+		   --SET refRoot.tns1:body = refInput.Response.Body.Datos;
+		--END IF;
+				  
+		
+		RETURN TRUE; 
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+		SET OutputRoot = InputRoot;
+	END;
+END MODULE;
+

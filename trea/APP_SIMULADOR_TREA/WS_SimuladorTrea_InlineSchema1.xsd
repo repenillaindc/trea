@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://bbva.com.pe/sist/operation/service" xmlns:ibmSchExtn="http://www.ibm.com/schema/extensions" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://bbva.com.pe/sist/operation/service" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+		
+			<xsd:element ibmSchExtn:docRoot="true" name="requestSimulacion" type="tns:RequestSimulacion"/>
+			<xsd:element ibmSchExtn:docRoot="true" name="responseSimulacion" type="tns:ResponseSimulacion"/>
+			
+			<xsd:element ibmSchExtn:docRoot="true" name="requestCatalogo" type="tns:RequestCatalogo"/>
+			<xsd:element ibmSchExtn:docRoot="true" name="responseCatalogo" type="tns:ResponseCatalogo"/>	
+			
+			<xsd:complexType name="RequestSimulacion">
+				<xsd:sequence>
+					<xsd:element name="header" type="tns:RequestHeader"/>
+					<xsd:element name="body" type="tns:SimulacionEntrada"/>
+				</xsd:sequence>
+			</xsd:complexType>	
+			
+			<xsd:complexType name="ResponseSimulacion">
+				<xsd:sequence>
+					<xsd:element name="header" type="tns:ResponseHeader"/>
+					<xsd:element name="body" type="tns:SimulacionSalida"/>
+				</xsd:sequence>
+			</xsd:complexType>	
+			
+			<xsd:complexType name="RequestCatalogo">
+				<xsd:sequence>
+					<xsd:element name="header" type="tns:RequestHeader"/>
+				</xsd:sequence>
+			</xsd:complexType>	
+		
+			<xsd:complexType name="ResponseCatalogo">
+				<xsd:sequence>
+					<xsd:element name="header" type="tns:ResponseHeader"/>
+					<xsd:element name="body" type="tns:CatalogoSalida"/>
+				</xsd:sequence>
+			</xsd:complexType>			
+			
+			<xsd:complexType name="RequestHeader">
+				<xsd:sequence>
+					<xsd:element name="idTransaccion" type="xsd:string"/>
+					<xsd:element name="codigoAplicacion" type="xsd:string"/>
+					<xsd:element name="usuario" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+		
+			<xsd:complexType name="ResponseHeader">
+				<xsd:sequence>
+					<xsd:element name="idTransaccion" type="xsd:string"/>
+					<xsd:element name="codigoRespuesta" type="xsd:string"/>
+					<xsd:element name="mensajeRespuesta" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			
+			<xsd:complexType name="SimulacionEntrada">
+				<xsd:sequence>
+					<xsd:element name="codigoProducto" type="xsd:string"/>
+					<xsd:element name="codigoSubProducto" type="xsd:string"/>
+					<xsd:element name="montoInicial" type="xsd:double"/>
+					<xsd:element name="tipoPlazo" type="xsd:string"/>
+					<xsd:element name="plazo" type="xsd:int"/>
+					<xsd:element name="tasa" type="xsd:double"/>
+					<xsd:element name="liquidacionIntereses" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			
+			<xsd:complexType name="SimulacionSalida">
+				<xsd:sequence>
+					<xsd:element name="datosGenerales" type="tns:DatosGenerales"/>
+					<xsd:element name="listaDetalle" type="tns:ListaDetalleSimulacion"/>
+				</xsd:sequence>
+			</xsd:complexType>	
+			
+			<xsd:complexType name="DatosGenerales">
+				<xsd:sequence>
+					<xsd:element name="producto" type="xsd:string"/>
+					<xsd:element name="subProducto" type="xsd:string"/>
+					<xsd:element name="codigoMoneda" type="xsd:string"/>
+					<xsd:element name="descripcionMoneda" type="xsd:string"/>
+					<xsd:element name="simboloMoneda" type="xsd:string"/>
+					<xsd:element name="cargo" type="xsd:string"/>
+					<xsd:element name="periodoLiquidacion" type="xsd:string"/>
+					<xsd:element name="mensaje" type="xsd:string"/>
+					<xsd:element name="montoInicial" type="xsd:double"/>
+					<xsd:element name="totalIntereses" type="xsd:double"/>
+					<xsd:element name="trea" type="xsd:double"/>
+					<xsd:element name="tea" type="xsd:double"/>
+					<xsd:element name="sme" type="xsd:double"/>					
+					<xsd:element name="franquicia" type="xsd:double"/>
+					<xsd:element name="anulacionFranquicia" type="xsd:double"/>
+				</xsd:sequence>
+			</xsd:complexType>	
+			
+			<xsd:complexType name="ListaDetalleSimulacion">
+				<xsd:sequence>
+					<xsd:element maxOccurs="unbounded" minOccurs="0" name="detalle" type="tns:DetalleSimulacion"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			
+			<xsd:complexType name="DetalleSimulacion">
+				<xsd:sequence>
+					<xsd:element name="mes" type="xsd:int"/>
+					<xsd:element name="monto" type="xsd:double"/>
+					<xsd:element name="interes" type="xsd:double"/>
+					<xsd:element name="cargo" type="xsd:double"/>
+					<xsd:element name="saldo" type="xsd:double"/>
+				</xsd:sequence>
+			</xsd:complexType>
+			
+			<xsd:complexType name="CatalogoSalida">
+				<xsd:sequence>
+					<xsd:element name="listaDetalle" type="tns:ListaDetalleCatalogo"/>
+				</xsd:sequence>
+			</xsd:complexType>	
+		
+			<xsd:complexType name="ListaDetalleCatalogo">
+				<xsd:sequence>
+					<xsd:element maxOccurs="unbounded" minOccurs="0" name="detalle" type="tns:DetalleCatalogo"/>
+				</xsd:sequence>
+			</xsd:complexType>	
+		
+			<xsd:complexType name="DetalleCatalogo">
+				<xsd:sequence>
+					<xsd:element name="codigoProducto" type="xsd:string"/>
+					<xsd:element name="codigoSubProducto" type="xsd:string"/>
+					<xsd:element name="descripcionSubProducto" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:complexType>	
+			
+		</xsd:schema>

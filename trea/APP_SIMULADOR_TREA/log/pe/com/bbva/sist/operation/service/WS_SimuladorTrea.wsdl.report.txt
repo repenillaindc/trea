@@ -1,0 +1,25 @@
+
+
+Importing file: C:\Users\Raul Penilla\Downloads\ProjectFilesWSDL\wsdl\WS_SimuladorTrea.wsdl
+
+The WSDL import will proceed with bindings WS_SimuladorTreaSOAP.
+Creating wsdl schema document for file:///C:/Users/Raul Penilla/Downloads/ProjectFilesWSDL/wsdl/WS_SimuladorTrea.wsdl.
+Parsing wsdl binding {http://bbva.com.pe/sist/operation/service}WS_SimuladorTreaSOAP.
+Parsing wsdl binding input obtenerSimulacion.
+Parsing wsdl binding output obtenerSimulacion.
+Parsing wsdl binding input obtenerCatalogo.
+Parsing wsdl binding output obtenerCatalogo.
+Processing doc style for operation obtenerSimulacion.
+Processing doc style for operation obtenerCatalogo.
+Populating WSDL schema WS_SimuladorTrea.xsd.
+Creating file WS_SimuladorTrea.xsd in the workspace.
+Creating file WS_SimuladorTrea_InlineSchema1.xsd in the workspace.
+Copying source WSDL WS_SimuladorTrea.wsdl to WS_SimuladorTrea.wsdl.
+
+Elapsed time processing this message definition file: 0.203 seconds
+Number of warnings for this message definition file: 0
+
+
+Number of files processed: 1
+
+

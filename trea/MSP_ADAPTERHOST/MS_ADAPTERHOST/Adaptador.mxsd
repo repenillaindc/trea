@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="UTF-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:complexType name="HeaderInputType">
+        <xsd:annotation>
+      <xsd:appinfo source="WMQI_APPINFO">
+        <tdsStructRep groupIndicator="        &lt;LT&gt;IH&lt;GT&gt;" groupTerminator="&lt;LT&gt;/IH&lt;GT&gt;" messageSetDefaultRep="Text1"/>
+      </xsd:appinfo>
+    </xsd:annotation>
+        <xsd:sequence>
+    		<xsd:element name="IdentificadorProtocolo">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="2"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="TerminalLogico">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="8"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="TerminalContable">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="8"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="Usuario">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="8"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="NumeroSecuencia">
+                <xsd:annotation>
+          <xsd:appinfo source="WMQI_APPINFO">
+            <tdsElemRep justification="rightJustify" messageSetDefaultRep="Text1" paddingCharacter="'0'" precision="-1"/>
+          </xsd:appinfo>
+        </xsd:annotation>
+                <xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="8"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="CodigoTransaccion">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="8"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="OpcionAplicacion">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="2"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="LongitudTrama">
+                <xsd:annotation>
+          <xsd:appinfo source="WMQI_APPINFO">
+            <tdsElemRep justification="rightJustify" messageSetDefaultRep="Text1" paddingCharacter="'0'" precision="-1"/>
+          </xsd:appinfo>
+        </xsd:annotation>
+                <xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="5"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="IndicadorCommit">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="1"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="TipoMensaje">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="1"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="TipoProceso">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="1"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="CanalComunicacion">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="2"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="IndicadorPreformato">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="1"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="Lenguaje">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="1"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    	</xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="DataInputType">
+        <xsd:annotation>
+      <xsd:appinfo source="WMQI_APPINFO">
+        <tdsStructRep dataElementSeparation="TaggedDelimited" groupIndicator="&lt;LT&gt;ME&lt;GT&gt;" groupTerminator="&lt;LT&gt;/ME&lt;GT&gt;" messageSetDefaultRep="Text1" tagDataSeparator=" "/>
+      </xsd:appinfo>
+    </xsd:annotation>
+        <xsd:sequence>
+            <xsd:sequence>
+        <xsd:element name="Longitud">
+                <xsd:annotation>
+          <xsd:appinfo source="WMQI_APPINFO">
+              <tdsElemRep justification="rightJustify" length="4" messageSetDefaultRep="Text1" paddingCharacter="'0'" precision="-1"/>
+            </xsd:appinfo>
+        </xsd:annotation>
+                <xsd:simpleType>
+            <xsd:restriction base="xsd:string"/>
+          </xsd:simpleType>
+            </xsd:element>
+        <xsd:element name="TipoFormato">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="1"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+      </xsd:sequence>
+            <xsd:sequence>
+        <xsd:annotation>
+          <xsd:appinfo source="WMQI_APPINFO">
+            <tdsStructRep dataElementSeparation="TaggedDelimited" messageSetDefaultRep="Text1" tagDataSeparator=" "/>
+          </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:element name="Mensaje">
+        <xsd:annotation>
+          <xsd:appinfo source="WMQI_APPINFO">
+              <tdsElemRep messageSetDefaultRep="Text1" precision="-1" render="Characters"/>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:simpleType>
+          <xsd:restriction base="xsd:string"/>
+        </xsd:simpleType>
+      </xsd:element>
+      </xsd:sequence>
+        </xsd:sequence> 
+    </xsd:complexType>
+
+    <xsd:complexType name="MessageInputType">
+        <xsd:annotation>
+      <xsd:appinfo source="WMQI_APPINFO">
+        <tdsStructRep dataElementSeparation="TaggedDelimited" messageSetDefaultRep="Text1" tagDataSeparator=" "/>
+      </xsd:appinfo>
+    </xsd:annotation>
+        <xsd:sequence>        
+            <xsd:element name="IH" type="HeaderInputType"/>
+    		<xsd:element name="ME" type="DataInputType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+
+    <xsd:element name="msg_PS9Request" type="MessageInputType">
+    <xsd:annotation>
+      <xsd:appinfo source="WMQI_APPINFO">
+        <MRMessage messageDefinition="/0/msg_PS9Request;XSDElementDeclaration$MRObject"/>
+      </xsd:appinfo>
+    </xsd:annotation>
+  </xsd:element>
+
+
+    
+    <xsd:complexType name="HeaderOutputType">
+        <xsd:annotation>
+      <xsd:appinfo source="WMQI_APPINFO">
+        <tdsStructRep groupIndicator="&lt;LT&gt;OH&lt;GT&gt;" groupTerminator="&lt;LT&gt;/OH&lt;GT&gt;" messageSetDefaultRep="Text1"/>
+      </xsd:appinfo>
+    </xsd:annotation>
+        <xsd:sequence>
+    		<xsd:element name="IdentificadorProtocolo">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="2"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="RespuestaTransaccion">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="1"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="ControlProceso">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="1"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="NumeroSecuencia">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="8"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="LongitudMensaje">
+    			<xsd:simpleType>
+    				<xsd:restriction base="xsd:string">
+    					<xsd:maxLength value="5"/>
+    				</xsd:restriction>
+    			</xsd:simpleType>
+    		</xsd:element>
+    	</xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="MessageOutputType">
+        <xsd:annotation>
+      <xsd:appinfo source="WMQI_APPINFO">
+        <tdsStructRep dataElementSeparation="TaggedDelimited" messageSetDefaultRep="Text1" tagDataSeparator=" "/>
+      </xsd:appinfo>
+    </xsd:annotation>
+        <xsd:sequence>
+            <xsd:sequence>
+        <xsd:element default=" " name="Espacio" nillable="true">
+          <xsd:simpleType>
+            <xsd:restriction base="xsd:string">
+              <xsd:maxLength value="8"/>
+            </xsd:restriction>
+          </xsd:simpleType>
+        </xsd:element>
+      </xsd:sequence>        
+    		<xsd:element name="OH" type="HeaderOutputType"/>
+            <xsd:element minOccurs="0" name="AV" type="WarningOutputType"/>
+            <xsd:element minOccurs="0" name="DE" type="DestinationOutputType"/>
+            <xsd:element minOccurs="0" name="ER" type="ErrorOutputType"/>
+            <xsd:element maxOccurs="1" minOccurs="0" name="LS1" type="ListDataOutputType"/>
+            <xsd:element minOccurs="0" name="LS2" type="ListNextTransactionOutputType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="msg_PS9Response" type="MessageOutputType">
+    <xsd:annotation>
+      <xsd:appinfo source="WMQI_APPINFO">
+        <MRMessage messageDefinition="/0/msg_PS9Response;XSDElementDeclaration=1$MRObject"/>
+      </xsd:appinfo>
+    </xsd:annotation>
+  </xsd:element>    
+ 
+ <xsd:complexType name="ListDataOutputType">
+    <xsd:annotation>
+      <xsd:appinfo source="WMQI_APPINFO">
+        <tdsStructRep dataElementSeparation="TaggedDelimited" groupIndicator="" groupTerminator="" messageSetDefaultRep="Text1" tagDataSeparator=" "/>
+      </xsd:appinfo>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" name="OC" type="DataOutputType">
+      </xsd:element>
+        </xsd:sequence>
+  </xsd:complexType>
+    <xsd:complexType name="DataOutputType">
+    <xsd:annotation>
+      <xsd:appinfo source="WMQI_APPINFO">
+        <tdsStructRep dataElementSeparation="TaggedDelimited" groupIndicator="&lt;LT&gt;OC&lt;GT&gt;" groupTerminator="&lt;LT&gt;/OC&lt;GT&gt;" messageSetDefaultRep="Text1" tagDataSeparator=" "/>
+      </xsd:appinfo>
+    </xsd:annotation>
+        <xsd:sequence>
+            <xsd:sequence>
+        <xsd:element name="TipoMensaje">
+        <xsd:annotation>
+          <xsd:appinfo source="WMQI_APPINFO">
+              <tdsElemRep length="1" messageSetDefaultRep="Text1" precision="-1"/>
+            </xsd:appinfo>
+        </xsd:annotation>
+                <xsd:simpleType>
+          <xsd:restriction base="xsd:string"/>
+        </xsd:simpleType>
+            </xsd:element>
+        <xsd:element name="IdentificadorDestino">
+        <xsd:annotation>
+          <xsd:appinfo source="WMQI_APPINFO">
+              <tdsElemRep length="1" messageSetDefaultRep="Text1" precision="-1"/>
+            </xsd:appinfo>
+        </xsd:annotation>
+                <xsd:simpleType>
+          <xsd:restriction base="xsd:string"/>
+        </xsd:simpleType>
+            </xsd:element>
+        <xsd:element name="NombreFormato">
+        <xsd:annotation>
+          <xsd:appinfo source="WMQI_APPINFO">
+              <tdsElemRep length="8" messageSetDefaultRep="Text1" precision="-1"/>
+            </xsd:appinfo>
+        </xsd:annotation>
+                <xsd:simpleType>
+          <xsd:restriction base="xsd:string"/>
+        </xsd:simpleType>
+            </xsd:element>
+      </xsd:sequence>
+            <xsd:sequence>
+        <xsd:annotation>
+          <xsd:appinfo source="WMQI_APPINFO">
+            <tdsStructRep dataElementSeparation="TaggedDelimited" messageSetDefaultRep="Text1" tagDataSeparator=" "/>
+          </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:element name="Mensaje">
+                <xsd:simpleType>
+          <xsd:restriction base="xsd:string"/>
+        </xsd:simpleType>
+            </xsd:element>
+      </xsd:sequence>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="ErrorOutputType">
+    <xsd:annotation>
+      <xsd:appinfo source="WMQI_APPINFO">
+        <tdsStructRep dataElementSeparation="TaggedDelimited" groupIndicator="&lt;LT&gt;ER&lt;GT&gt;" groupTerminator="&lt;LT&gt;/ER&lt;GT&gt;" messageSetDefaultRep="Text1" tagDataSeparator=" "/>
+      </xsd:appinfo>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:sequence>
+        <xsd:element name="CodigoError">
+          <xsd:annotation>
+            <xsd:appinfo source="WMQI_APPINFO">
+              <tdsElemRep length="7" messageSetDefaultRep="Text1" precision="-1"/>
+            </xsd:appinfo>
+          </xsd:annotation>
+          <xsd:simpleType>
+            <xsd:restriction base="xsd:string"/>
+          </xsd:simpleType>
+        </xsd:element>
+        <xsd:element name="NumeroVariables">
+          <xsd:annotation>
+            <xsd:appinfo source="WMQI_APPINFO">
+              <tdsElemRep length="1" messageSetDefaultRep="Text1" precision="-1"/>
+            </xsd:appinfo>
+          </xsd:annotation>
+                    <xsd:simpleType>
+            <xsd:restriction base="xsd:string"/>
+          </xsd:simpleType>
+                </xsd:element>
+      </xsd:sequence>
+      <xsd:sequence>
+        <xsd:annotation>
+          <xsd:appinfo source="WMQI_APPINFO">
+            <tdsStructRep dataElementSeparation="TaggedDelimited" messageSetDefaultRep="Text1" tagDataSeparator=" "/>
+          </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:element name="VariablesError">
+          <xsd:annotation>
+            <xsd:appinfo source="WMQI_APPINFO">
+              <tdsElemRep length="0" messageSetDefaultRep="Text1" precision="-1"/>
+            </xsd:appinfo>
+          </xsd:annotation>
+          <xsd:simpleType>
+            <xsd:restriction base="xsd:string"/>
+          </xsd:simpleType>
+        </xsd:element>
+            </xsd:sequence>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="WarningOutputType">
+    <xsd:annotation>
+      <xsd:appinfo source="WMQI_APPINFO">
+        <tdsStructRep dataElementSeparation="TaggedDelimited" groupIndicator="&lt;LT&gt;AV&lt;GT&gt;" groupTerminator="&lt;LT&gt;/AV&lt;GT&gt;" messageSetDefaultRep="Text1" tagDataSeparator=" "/>
+      </xsd:appinfo>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:sequence>
+        <xsd:element name="CodigoAviso">
+          <xsd:annotation>
+            <xsd:appinfo source="WMQI_APPINFO">
+              <tdsElemRep length="7" messageSetDefaultRep="Text1" precision="-1"/>
+            </xsd:appinfo>
+          </xsd:annotation>
+          <xsd:simpleType>
+            <xsd:restriction base="xsd:string"/>
+          </xsd:simpleType>
+        </xsd:element>
+        <xsd:element name="NumeroVariables">
+          <xsd:annotation>
+            <xsd:appinfo source="WMQI_APPINFO">
+              <tdsElemRep length="1" messageSetDefaultRep="Text1" precision="-1"/>
+            </xsd:appinfo>
+          </xsd:annotation>
+          <xsd:simpleType>
+            <xsd:restriction base="xsd:string"/>
+          </xsd:simpleType>
+        </xsd:element>
+      </xsd:sequence>
+      <xsd:sequence>
+        <xsd:annotation>
+          <xsd:appinfo source="WMQI_APPINFO">
+            <tdsStructRep dataElementSeparation="TaggedDelimited" messageSetDefaultRep="Text1" tagDataSeparator=" "/>
+          </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:element name="VariablesAviso">
+          <xsd:simpleType>
+            <xsd:restriction base="xsd:string"/>
+          </xsd:simpleType>
+        </xsd:element>
+      </xsd:sequence>
+        </xsd:sequence>
+  </xsd:complexType>
+    <xsd:complexType name="NextTransactionOutputType">
+        <xsd:annotation>
+      <xsd:appinfo source="WMQI_APPINFO">
+        <tdsStructRep dataElementSeparation="TaggedDelimited" groupIndicator="&lt;LT&gt;SG&lt;GT&gt;" groupTerminator="&lt;LT&gt;/SG&lt;GT&gt;" messageSetDefaultRep="Text1" tagDataSeparator=" "/>
+      </xsd:appinfo>
+    </xsd:annotation>
+        <xsd:sequence>
+      <xsd:sequence>
+        <xsd:element name="CodigoTransaccion">
+          <xsd:annotation>
+            <xsd:appinfo source="WMQI_APPINFO">
+              <tdsElemRep length="8" messageSetDefaultRep="Text1" precision="-1"/>
+            </xsd:appinfo>
+          </xsd:annotation>
+          <xsd:simpleType>
+            <xsd:restriction base="xsd:string"/>
+          </xsd:simpleType>
+        </xsd:element>
+        <xsd:element name="CodigoEnvio">
+                    <xsd:annotation>
+            <xsd:appinfo source="WMQI_APPINFO">
+              <tdsElemRep length="1" messageSetDefaultRep="Text1" precision="-1"/>
+            </xsd:appinfo>
+          </xsd:annotation>
+                    <xsd:simpleType>
+            <xsd:restriction base="xsd:string"/>
+          </xsd:simpleType>
+        </xsd:element>
+        <xsd:element name="TipoMensaje">
+                    <xsd:annotation>
+            <xsd:appinfo source="WMQI_APPINFO">
+              <tdsElemRep length="1" messageSetDefaultRep="Text1" precision="-1"/>
+            </xsd:appinfo>
+          </xsd:annotation>
+                    <xsd:simpleType>
+            <xsd:restriction base="xsd:string"/>
+          </xsd:simpleType>
+        </xsd:element>
+      </xsd:sequence>
+      <xsd:sequence>
+        <xsd:annotation>
+          <xsd:appinfo source="WMQI_APPINFO">
+            <tdsStructRep dataElementSeparation="TaggedDelimited" delimiter="" groupIndicator="" groupTerminator="" messageSetDefaultRep="Text1" tagDataSeparator=" "/>
+          </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:element name="Lineas">
+                    <xsd:annotation>
+            <xsd:appinfo source="WMQI_APPINFO">
+              <tdsElemRep length="0" messageSetDefaultRep="Text1" precision="-1"/>
+            </xsd:appinfo>
+          </xsd:annotation>
+                    <xsd:simpleType>
+            <xsd:restriction base="xsd:string"/>
+          </xsd:simpleType>
+        </xsd:element>
+      </xsd:sequence>
+    </xsd:sequence>
+  </xsd:complexType>
+    <xsd:complexType name="ListNextTransactionOutputType">
+    <xsd:annotation>
+      <xsd:appinfo source="WMQI_APPINFO">
+        <tdsStructRep dataElementSeparation="TaggedDelimited" messageSetDefaultRep="Text1" tagDataSeparator=" "/>
+      </xsd:appinfo>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" name="SG" type="NextTransactionOutputType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+    <xsd:complexType name="DestinationOutputType">
+    <xsd:annotation>
+      <xsd:appinfo source="WMQI_APPINFO">
+        <tdsStructRep dataElementSeparation="TaggedDelimited" groupIndicator="&lt;LT&gt;DE&lt;GT&gt;" groupTerminator="&lt;LT&gt;/DE&lt;GT&gt;" messageSetDefaultRep="Text1" tagDataSeparator=" "/>
+      </xsd:appinfo>
+    </xsd:annotation>
+    <xsd:sequence minOccurs="1">
+      <xsd:element name="Mensaje">
+        <xsd:simpleType>
+          <xsd:restriction base="xsd:string"/>
+        </xsd:simpleType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

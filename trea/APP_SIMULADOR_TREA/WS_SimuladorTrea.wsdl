@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" name="WS_SimuladorTrea" targetNamespace="http://bbva.com.pe/sist/operation/service" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://bbva.com.pe/sist/operation/service" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <wsdl:documentation>
+    <wsdl:appinfo source="WMQI_APPINFO">
+      <MRWSDLAppInfo imported="true">
+        <generatedXSD location="WS_SimuladorTrea_InlineSchema1.xsd"/>
+        <binding hasEncoding="false" imported="true" name="WS_SimuladorTreaSOAP" originalBindingStyle="document"/>
+      </MRWSDLAppInfo>
+    </wsdl:appinfo>
+  </wsdl:documentation>
+	 	 
+  <wsdl:types>
+		
+		
+          <xsd:schema elementFormDefault="qualified" targetNamespace="http://bbva.com.pe/sist/operation/service" xmlns:ibmSchExtn="http://www.ibm.com/schema/extensions">
+<xsd:include schemaLocation="WS_SimuladorTrea_InlineSchema1.xsd"/>
+    </xsd:schema>
+    </wsdl:types>
+  
+  <wsdl:message name="msgRequestSimulacion">
+    <wsdl:part element="tns:requestSimulacion" name="request"/>
+  </wsdl:message>
+
+  <wsdl:message name="msgResponseSimulacion">
+    <wsdl:part element="tns:responseSimulacion" name="response"/>
+  </wsdl:message>
+
+  <wsdl:message name="msgRequestCatalogo">
+    <wsdl:part element="tns:requestCatalogo" name="request"/>
+  </wsdl:message>
+
+  <wsdl:message name="msgResponseCatalogo">
+    <wsdl:part element="tns:responseCatalogo" name="response"/>
+  </wsdl:message>
+  
+  <wsdl:portType name="WS_SimuladorTrea">
+    <wsdl:operation name="obtenerSimulacion">
+	      <wsdl:input message="tns:msgRequestSimulacion"/>
+	      <wsdl:output message="tns:msgResponseSimulacion"/>
+    </wsdl:operation>
+    <wsdl:operation name="obtenerCatalogo">
+	      <wsdl:input message="tns:msgRequestCatalogo"/>
+	      <wsdl:output message="tns:msgResponseCatalogo"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  
+  <wsdl:binding name="WS_SimuladorTreaSOAP" type="tns:WS_SimuladorTrea">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="obtenerSimulacion">
+	      <soap:operation soapAction="http://bbva.com.pe/sist/operation/service"/>
+	      <wsdl:input>
+	        <soap:body use="literal"/>
+	      </wsdl:input>
+	      <wsdl:output>
+	        <soap:body use="literal"/>
+	      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="obtenerCatalogo">
+	      <soap:operation soapAction="http://bbva.com.pe/sist/operation/service"/>
+	      <wsdl:input>
+	        <soap:body use="literal"/>
+	      </wsdl:input>
+	      <wsdl:output>
+	        <soap:body use="literal"/>
+	      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  
+  <wsdl:service name="WS_SimuladorTrea">
+    <wsdl:port binding="tns:WS_SimuladorTreaSOAP" name="WS_SimuladorTreaSOAP">
+	      <soap:address location="http://localhost:8080/bbva/SIST/services/ProcessRequest"/>
+    </wsdl:port>
+  </wsdl:service>
+  
+</wsdl:definitions>

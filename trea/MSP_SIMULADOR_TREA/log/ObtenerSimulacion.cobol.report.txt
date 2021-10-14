@@ -1,0 +1,36 @@
+
+
+Importing file: D:\Copys\B425_req.cpy
+
+Import options for COBOL: 
+	EXTENSION_COB=FP
+	EXTENSION_CCP=FP
+	QUOTE=DOUBLE
+	EXTENSION_CPY=DS
+	EXTENSION_CBL=FP
+	CODEPAGE=ISO8859_1
+	FLOATING_POINT_FORMAT=0
+	REMOTE_ENDIAN=Little
+	TRUNC=STD
+	NSYMBOL=NATIONAL
+	ENDIAN=Little
+	EXT_DECIMAL_SIGN=EBCDIC
+	PLATFORM_SELECTION=0
+	NUMPROC=PFD
+	SCHEMA_TARGET_NAMESPACE_URI=null
+	CREATE_DEFAULT_VALUES_FROM_INITIAL_VALUES=true
+	CREATE_FACETS_FROM_LEVEL_88_VALUE_CLAUSES=false
+	CREATE_NULL_VALUES_FOR_FIELDS=true
+	NULL_CHARACTER=SPACE
+	STRING_PADDING_CHARACTER=SPACE
+
+Setting nillable property on all elements and encoding null value to "SPACE"
+Setting Padding Character for elements of type String  "SPACE"
+
+Elapsed time processing this message definition file: 0.258 seconds
+Number of warnings for this message definition file: 0
+
+
+Number of files processed: 1
+
+

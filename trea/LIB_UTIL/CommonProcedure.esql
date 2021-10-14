@@ -1,0 +1,243 @@
+
+
+CREATE PROCEDURE PrepareMsgAudit(IN  RefEnv      REFERENCE, 
+								 IN  Evento      CHARACTER, 
+								 IN  RefData     REFERENCE,
+							     IN  StringData  BLOB, 
+							     IN  Referencia  CHARACTER,  
+							     IN  Encoding    INTEGER,
+							     IN  CCSID       INTEGER
+								)
+BEGIN	
+	  --DECLARE CONTINUE HANDLER FOR SQLSTATE LIKE'%' BEGIN END;
+		
+	  DECLARE RefAuditoria REFERENCE TO RefEnv.Variables.Auditoria;
+	  CREATE LASTCHILD OF RefEnv.Variables.Auditoria AS RefAuditoria NAME 'Mensaje';
+	  
+	  --SET RefAuditoria.FechaEvento = CAST(CURRENT_DATE AS CHARACTER FORMAT C_FORMAT_DATE_1); 
+	  --SET RefAuditoria.HoraEvento  = CAST(CURRENT_TIME AS CHARACTER FORMAT C_FORMAT_TIME_2);
+	  SET RefAuditoria.FechaEvento = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT C_FORMAT_TIMESTAMP_1);--GetCurrentTimeStamp(C_FORMAT_TIMESTAMP_1); 	  
+	  SET RefAuditoria.IdServicio  = RefEnv.Variables.Context.IdServicio;
+	  SET RefAuditoria.IdEvento    = Evento;	  
+	  SET RefAuditoria.TipoMensaje = C_TEXT; --Trama posicional
+	  SET RefAuditoria.CCSID       = CCSID;
+	  SET RefAuditoria.Encoding    = Encoding;
+	  
+	  IF Referencia IS NOT NULL THEN
+	     SET RefAuditoria.Referencia = Referencia;
+	  END IF;
+	  
+	  IF StringData IS NULL THEN
+		SET RefAuditoria.Data = RefData;	
+	  ELSE
+		SET RefAuditoria.Data = StringData;
+	  END IF;		  
+END;
+
+CREATE PROCEDURE PrepareMsgAuditVocaLink (
+	IN  RefEnv      REFERENCE, 
+	IN  Evento      CHARACTER, 
+	IN  RefData     REFERENCE,
+	IN  StringData  BLOB, 
+	IN  Referencia  CHARACTER,  
+	IN  Encoding    INTEGER,
+	IN  CCSID       INTEGER
+)
+BEGIN	
+	
+	  DECLARE RefAuditoria REFERENCE TO RefEnv.Variables.Auditoria;
+	  CREATE LASTCHILD OF RefEnv.Variables.Auditoria AS RefAuditoria NAME 'Mensaje';
+ 
+ 	  SET RefAuditoria.TipoAuditoria = C_TIPO_VOCALINK;
+	  SET RefAuditoria.FechaEvento = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT C_FORMAT_TIMESTAMP_1);--GetCurrentTimeStamp(C_FORMAT_TIMESTAMP_1); 	  
+	  SET RefAuditoria.IdServicio  = RefEnv.Variables.Context.IdServicio;
+	  SET RefAuditoria.IdEvento    = Evento;	  
+	  SET RefAuditoria.TipoMensaje = C_TEXT; --Trama posicional
+	  SET RefAuditoria.CCSID       = CCSID;
+	  SET RefAuditoria.Encoding    = Encoding;
+
+	  IF Referencia IS NOT NULL THEN
+	    SET RefAuditoria.Referencia = Referencia;
+	  END IF;
+
+	  IF StringData IS NULL THEN
+		SET RefAuditoria.Data = RefData;	
+	  ELSE
+		SET RefAuditoria.Data = StringData;
+	  END IF;
+
+END;
+
+/*
+* Envia mensajes a la cola de Auditoria.
+* 
+* (INOUT)RefOutputRoot		: Referencia a la variable: OutputRoot.
+* (IN)RefEnvVariables 		: Referencia a la variable: Environment.Variables.
+*/
+CREATE PROCEDURE SendAuditoria(IN RefOutputRoot REFERENCE, IN RefEnvVariables REFERENCE)
+BEGIN
+	--NO generar error por ningun motivo.
+	DECLARE CONTINUE HANDLER FOR SQLSTATE LIKE'%' BEGIN END;
+	
+	-- Se elimina el dominio XMLNSC
+	DELETE LASTCHILD OF RefOutputRoot;	
+	
+	--Para enviar las auditorias.
+	SET RefOutputRoot.MQMD.CodedCharSetId = C_CCSID_CLIENT;
+	SET RefOutputRoot.MQMD.Format         = MQFMT_STRING;
+	
+	CREATE LASTCHILD OF RefOutputRoot Domain('XMLNSC') NAME 'XMLNSC'; 	
+	CREATE FIELD RefOutputRoot.XMLNSC.Auditoria;
+	DECLARE RefAuditOut REFERENCE TO RefOutputRoot.XMLNSC.Auditoria;
+	
+	 FOR RefAuditIn AS RefEnvVariables.Auditoria.Mensaje[] DO
+	 	SET RefAuditOut.TipoAuditoria = RefAuditIn.TipoAuditoria;
+		SET RefAuditOut.MsgId 		  = RefEnvVariables.Context.RqID;
+		SET RefAuditOut.IdServicio    = RefEnvVariables.Context.IdServicio;
+		SET RefAuditOut.IdAppOrigen   = COALESCE(RefEnvVariables.Context.IdAppOrigen, RefEnvVariables.Context.CodEntidadOrigen);
+		SET RefAuditOut.DesAppOrigen  = RefEnvVariables.Context.DesAppOrigen;
+		SET RefAuditOut.IdAppDestino  = COALESCE(RefEnvVariables.Context.IdAppDestino, RefEnvVariables.Context.CodEntidadDestino);
+		SET RefAuditOut.DesAppDestino = RefEnvVariables.Context.DesAppDestino;
+		SET RefAuditOut.NoOperBanco   = RefEnvVariables.Context.NroOperacionBanco;
+		SET RefAuditOut.NoOperCCE     = RefEnvVariables.Context.NroOperacionCCE;
+		SET RefAuditOut.CodRespuesta  = RefEnvVariables.Context.CodRespuesta;
+		SET RefAuditOut.DesRespuesta  = RefEnvVariables.Context.DesRespuesta;
+		SET RefAuditOut.CodCanal      = RefEnvVariables.Context.CodCanal;
+		SET RefAuditOut.Usuario		  = RefEnvVariables.Context.Usuario;
+		SET RefAuditOut.FechaEvento	  = RefAuditIn.FechaEvento;
+		SET RefAuditOut.IdEvento 	  = RefAuditIn.IdEvento;
+		SET RefAuditOut.TipoEvento 	  = 'A';
+		SET RefAuditOut.TipoMensaje	  = RefAuditIn.TipoMensaje;
+		SET RefAuditOut.QMGR		  = RefEnvVariables.Context.QManagerName;
+		SET RefAuditOut.CCSID		  = RefAuditIn.CCSID;
+		SET RefAuditOut.Encoding	  = RefAuditIn.Encoding;
+		SET RefAuditOut.Referencia	  = RefAuditIn.Referencia;
+		
+		DELETE FIELD RefAuditOut.Data; 			
+		SET RefAuditOut.Data 		 = RefAuditIn.Data;	
+	
+		PROPAGATE TO TERMINAL 1 DELETE NONE;
+	 END FOR;	
+END;
+
+
+/*
+* Envia mensajes a la cola de Envio de correo.
+* 
+* (INOUT)RefOutputRoot		: Referencia a la variable: OutputRoot.
+* (IN)RefEnvVariables 		: Referencia a la variable: Environment.Variables.
+*/
+CREATE PROCEDURE SendEmail(IN RefOutputRoot REFERENCE,IN RefEnvVariables REFERENCE)
+BEGIN
+	--NO generar error por ningun motivo.
+	DECLARE CONTINUE HANDLER FOR SQLSTATE LIKE'%' BEGIN END;
+	
+	-- Se elimina el dominio XMLNSC
+	DELETE LASTCHILD OF RefOutputRoot;	
+	
+	--Para enviar las auditorias.
+	SET RefOutputRoot.MQMD.CodedCharSetId = C_CCSID_ISO88591_ASCII;--C_CCSID_CLIENT;
+	SET RefOutputRoot.MQMD.Format         = MQFMT_STRING;
+	
+	CREATE LASTCHILD OF RefOutputRoot Domain('XMLNSC') NAME 'XMLNSC'; 	
+	CREATE FIELD RefOutputRoot.XMLNSC.Email;
+	DECLARE RefEmailOut REFERENCE TO RefOutputRoot.XMLNSC.Email;
+
+	SET RefEmailOut.To            = RefEnvVariables.Email.To;
+	SET RefEmailOut.From          = RefEnvVariables.Email.From;
+	SET RefEmailOut.Cc            = RefEnvVariables.Email.Cc;
+	SET RefEmailOut.Bcc           = RefEnvVariables.Email.Bcc;
+	SET RefEmailOut.Asunto        = RefEnvVariables.Email.Asunto;
+	SET RefEmailOut.Body 	      = RefEnvVariables.Email.Body;
+	SET RefEmailOut.TipoContenido       = RefEnvVariables.Email.TipoContenido;
+	SET RefEmailOut.AttachTipoContenido = RefEnvVariables.Email.AttachTipoContenido;
+	SET RefEmailOut.AttachNombre	    = RefEnvVariables.Email.AttachNombre;
+	SET RefEmailOut.AttachData 	        = RefEnvVariables.Email.AttachData;
+
+	PROPAGATE TO TERMINAL 1 DELETE NONE;
+END;
+
+
+/*
+ * Description: Procedimiento que obtiene del arbol de mensaje el codigo y la descripcion de la excepcion. Asimismo,
+ * 				utiliza rango de codigos para agrupa los mensaje de error 
+ * Parameters:
+ * IN:  InputTree 	 REFERENCE 	- Es el arbol de mensaje de entrada al nodo.
+ * OUT: intMsgNumber INTEGER 	- Codigo de la excepcion generada.
+ * OUT: chrMsgText 	 CHARACTER 	- Descripcion de la excepcion generada.
+ */
+CREATE PROCEDURE GetDetalleError(IN InputTree REFERENCE,OUT intMsgNumber INTEGER,OUT chrMsgText CHARACTER)
+BEGIN    
+    DECLARE ptrException REFERENCE TO InputTree.*[1];
+    DECLARE numInserts 	 INTEGER 0;
+    DECLARE intInsert 	 INTEGER 1;
+  
+    WHILE LASTMOVE(ptrException) DO
+		IF ptrException.Number IS NOT NULL THEN
+			SET intInsert = 1;
+    		SET intMsgNumber = ptrException.Number;
+    		SET numInserts = CARDINALITY(ptrException.Insert[]);
+    		
+    		IF numInserts > 0 THEN
+				IF ( intMsgNumber >= 8000  AND intMsgNumber <= 8999 ) THEN										
+					SET chrMsgText = 'Commands Error -' 		 	 || FIELDNAME(ptrException) ||':'|| ptrException.Text || ' [';
+				ELSEIF ( intMsgNumber >= 7000  AND intMsgNumber <= 7999 ) THEN			
+					SET chrMsgText = 'Publish/subscribe Error - ' 	 || FIELDNAME(ptrException) ||':'|| ptrException.Text || ' [';	
+				ELSEIF ( intMsgNumber >= 6000  AND intMsgNumber <= 6999 ) THEN			
+					SET chrMsgText = 'WebSphere MQ parsers Error - ' || FIELDNAME(ptrException) ||':'|| ptrException.Text || ' [';
+				ELSEIF ( intMsgNumber >= 5000  AND intMsgNumber <= 5999 ) THEN			
+					SET chrMsgText = 'Parsers Error - ' 			 || FIELDNAME(ptrException) ||':'|| ptrException.Text || ' [';
+				ELSEIF ( intMsgNumber >= 3000  AND intMsgNumber <= 4999 ) THEN			
+					SET chrMsgText = 'Built-in nodes Error - ' 		 || FIELDNAME(ptrException) ||':'|| ptrException.Text || ' [';	
+				ELSEIF ( intMsgNumber >= 2000  AND intMsgNumber <= 2999 ) THEN			
+					SET chrMsgText = 'Broker Error -' 				 || FIELDNAME(ptrException) ||':'|| ptrException.Text || ' [';
+				ELSEIF ( intMsgNumber >= 1000  AND intMsgNumber <= 1999 ) THEN
+					SET chrMsgText = 'Configuration Error - ' 		 || FIELDNAME(ptrException) ||':'|| ptrException.Text || ' [';	
+				ELSE
+					SET chrMsgText = 'Undefined Error - ' 			 || FIELDNAME(ptrException) ||':'|| ptrException.Text || ' [';
+				END IF;																			
+					WHILE intInsert <= numInserts DO
+    					SET chrMsgText = chrMsgText || 'Insert ' || CAST(intInsert AS CHARACTER) || ':' ||ptrException.Insert[intInsert].Text;
+    					IF intInsert <> numInserts THEN
+	    					SET chrMsgText = chrMsgText || ',';
+    					ELSE
+    						SET chrMsgText = chrMsgText || ']';	
+	    				END IF;
+	    				SET intInsert = intInsert + 1;
+					END WHILE;																
+    		END IF;
+		END IF;		
+    	MOVE ptrException LASTCHILD;    	
+    		IF LENGTH(TRIM(chrMsgText)) = 0 THEN
+    			SET chrMsgText = 'Request truncated. Failed to process the request';
+    			SET intMsgNumber = 9999;
+    		END IF;    	
+	END WHILE;
+END;
+
+
+/* 
+Splits S on Delim into an array in Env (Environment.Split.Char[]) 
+Removes Environment.Split before refilling it 
+*/ 
+CREATE PROCEDURE Split(IN S CHARACTER, IN Env REFERENCE, IN Delim CHARACTER) 
+BEGIN 
+   DECLARE P INTEGER; 
+   DECLARE Idx INTEGER 1; 
+
+   SET Env.Split = NULL; 
+    
+   REPEAT 
+      SET P = POSITION(Delim IN S); 
+      IF P = 0 THEN 
+         SET Env.Char[Idx] = S; 
+      ELSE 
+         SET Env.Char[Idx] = LEFT(S, P - 1); 
+         SET S = SUBSTRING(S FROM P + LENGTH(Delim)); 
+         SET Idx = Idx + 1; 
+      END IF; 
+   UNTIL P = 0 
+       
+   END REPEAT;    
+
+END;

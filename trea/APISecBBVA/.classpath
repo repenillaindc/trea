@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path=""/>
+	<classpathentry exported="true" kind="con" path="com.ibm.etools.mft.uri.classpath.MBProjectReference"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="D:/IBM_Bus_Lab/bbva/ws_trea/trea/RECURSOS/jars/CoreServices.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/IBM_Bus_Lab/bbva/ws_trea/trea/RECURSOS/jars/guava-27.1-android.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/IBM_Bus_Lab/bbva/ws_trea/trea/RECURSOS/jars/netty-all-4.1.6.Final.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/IBM_Bus_Lab/bbva/ws_trea/trea/RECURSOS/jars/SECCore.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/IBM_Bus_Lab/bbva/ws_trea/trea/RECURSOS/jars/SECCustomAPITIB.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/IBM_Bus_Lab/bbva/ws_trea/trea/RECURSOS/jars/SECCustomAPITIBBBVA.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/IBM_Bus_Lab/bbva/ws_trea/trea/RECURSOS/jars/SECCustomBBVA.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/IBM_Bus_Lab/bbva/ws_trea/trea/RECURSOS/jars/SECProxy.jar"/>
+	<classpathentry exported="true" kind="lib" path="D:/IBM_Bus_Lab/bbva/ws_trea/trea/RECURSOS/jars/SocketServices.jar"/>
+	<classpathentry kind="lib" path="D:/IBM_Bus_Lab/bbva/ws_tinonline/tinonline/RECURSOS/jars/log4j-1.2.8.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

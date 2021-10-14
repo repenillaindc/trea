@@ -1,0 +1,59 @@
+
+
+
+CREATE COMPUTE MODULE SF_Err_PreparaErr
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		CALL CopyMessageHeaders();
+	    SET OutputRoot.Properties.CodedCharSetId = C_CCSID_CLIENT;
+		SET OutputRoot.Properties.Encoding       = C_ENCODING_CLIENT;		
+		
+		DECLARE options INTEGER BITOR(FolderBitStream, ValidateNone);
+		DECLARE MsgNumber INTEGER 0;
+		DECLARE MsgText CHARACTER '';
+		DECLARE MSGBLOB BLOB;		
+				
+		CALL GetDetalleError(InputExceptionList,MsgNumber,MsgText);
+		DECLARE ChrMsgNumber CHARACTER CAST(MsgNumber AS CHARACTER);
+		DECLARE RefError REFERENCE TO OutputRoot.XMLNSC.Auditoria;
+		
+		CREATE FIELD OutputRoot.XMLNSC.Auditoria AS RefError;				
+		SET RefError.MsgId 		   = Environment.Variables.Context.RqID;
+	  	SET RefError.FechaEvento   = GetCurrentTimeStamp(C_FORMAT_TIMESTAMP_1);--CAST(CURRENT_DATE AS CHARACTER FORMAT C_FORMAT_DATE_1); 
+	  	--SET RefError.HoraEvento    = CAST(CURRENT_TIME AS CHARACTER FORMAT C_FORMAT_TIME_2);
+		SET RefError.IdServicio    = Environment.Variables.Context.IdServicio;
+		SET RefError.IdAppOrigen   = Environment.Variables.Context.IdAppOrigen;
+		SET RefError.DesAppOrigen  = Environment.Variables.Context.DesAppOrigen;
+		SET RefError.IdAppDestino  = Environment.Variables.Context.IdAppDestino;
+		SET RefError.DesAppDestino = Environment.Variables.Context.DesAppDestino;		
+		SET RefError.TipoEvento    = 'E';
+        SET RefError.IdEvento      = C_EV_ERROR;
+        SET RefError.TipoMensaje   = C_XML;
+		SET RefError.DataError     = 'MB' || Padding(ChrMsgNumber,'0',4,TRUE) || ': ' || MsgText;
+		SET RefError.QMGR 		   = QueueManagerName;
+		SET RefError.Referencia    = Environment.Variables.Context.Referencia;
+		
+		CREATE LASTCHILD OF Environment DOMAIN 'XMLNSC' NAME 'DataErr';
+		SET Environment.DataErr = InputExceptionList;
+		SET MSGBLOB = ASBITSTREAM(Environment.DataErr.*[1] OPTIONS options CCSID 1208);--InputRoot.Properties.CodedCharSetId);
+		SET RefError.Data = MSGBLOB;
+		
+		SET Environment.DataErr = NULL;
+		
+		RETURN TRUE;
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+		SET OutputRoot = InputRoot;
+	END;
+END MODULE;
