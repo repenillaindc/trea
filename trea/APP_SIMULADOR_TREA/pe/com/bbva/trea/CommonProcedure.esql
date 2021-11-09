@@ -456,4 +456,43 @@ BEGIN
 	CREATE LASTCHILD OF RefOutput.SOAP TYPE Name NAME 'Body';
 	CREATE LASTCHILD OF RefOutput.SOAP.Body TYPE Name NAMESPACE tns1 NAME 'responseCatalogo';
 
-END; 
+END;
+
+CREATE PROCEDURE SetRequestToHostSimulacion(
+	IN     RefBody        REFERENCE,
+	IN     RefEnvironment REFERENCE,
+	IN     rowCopyRq	  REFERENCE,
+	INOUT  C_MESSAGE_TYPE CHARACTER
+) 
+BEGIN
+	DECLARE refInSimulacion REFERENCE TO RefBody.tns1:requestSimulacion;
+	SET RefEnvironment.Variables.Service.idTransaccion = COALESCE(refInSimulacion.tns1:header.tns1:idTransaccion, '');
+	SET C_MESSAGE_TYPE = C_MESSAGE_TYPE_OBTENER_SIMULACION;
+	CALL ValidateMessageSimulacion(refInSimulacion);
+			
+	SET rowCopyRq.ROOT.N425_PRODUCT = refInSimulacion.tns1:body.tns1:codigoProducto;
+	SET rowCopyRq.ROOT.N425_SUBPROD = refInSimulacion.tns1:body.tns1:codigoSubProducto;
+	SET rowCopyRq.ROOT.N425_MONTOIN = CAST(CAST(refInSimulacion.tns1:body.tns1:montoInicial AS DECIMAL) AS CHARACTER);
+	SET rowCopyRq.ROOT.N425_TPPLAZO = refInSimulacion.tns1:body.tns1:tipoPlazo;
+	SET rowCopyRq.ROOT.N425_PLAZO   = CAST(refInSimulacion.tns1:body.tns1:plazo AS CHARACTER);
+	SET rowCopyRq.ROOT.N425_TASA    = CAST(CAST(refInSimulacion.tns1:body.tns1:tasa AS DECIMAL) AS CHARACTER);
+	SET rowCopyRq.ROOT.N425_ABOINT  = refInSimulacion.tns1:body.tns1:liquidacionIntereses;
+END;
+
+CREATE PROCEDURE SetRequestToHostCatalogo(
+	IN     RefBody        REFERENCE,
+	IN     RefEnvironment REFERENCE,
+	IN     rowCopyRq	  REFERENCE,
+	INOUT  C_MESSAGE_TYPE CHARACTER
+) 
+BEGIN
+	DECLARE refInCatalogo REFERENCE TO RefBody.tns1:requestCatalogo;
+	SET RefEnvironment.Variables.Service.idTransaccion = COALESCE(refInCatalogo.tns1:header.tns1:idTransaccion, '');
+	SET C_MESSAGE_TYPE = C_MESSAGE_TYPE_OBTENER_CATALOGO;
+		    
+	-- al parecer estos valores tienen parametria 
+	SET rowCopyRq.ROOT.MTG004_CDTABLA  = '0724'; --'0724'; 
+	SET rowCopyRq.ROOT.MTG004_CLAVBAN  = '0011'; --'0011';
+	SET rowCopyRq.ROOT.MTG004_CLAVTG   = '0011'; -- que es esto???? 
+	SET rowCopyRq.ROOT.MTG004_TCCIDIOM = 'R';    --'R';	
+END;

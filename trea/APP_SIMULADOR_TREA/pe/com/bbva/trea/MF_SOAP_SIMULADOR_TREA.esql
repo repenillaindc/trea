@@ -1,82 +1,54 @@
 BROKER SCHEMA pe.com.bbva.trea
 
-DECLARE QMName 							   EXTERNAL CHARACTER C_EMPTY_CHARACTER;
-DECLARE C_REPLYTOQ_MSJ_MQ_HOST             EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;
-DECLARE C_PREFIJO_ALIAS_QMGR_PRE           EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;
-DECLARE C_PREFIJO_ALIAS_QMGR_POST          EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;
-DECLARE C_COLA_MQ_ENVIO_HOST               EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER; -- definir en userVariables 
-DECLARE C_QMGR_MQ_ENVIO_HOST               EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;  -- definir en userVariables 
-DECLARE C_COLA_MQ_RESPUESTA_HOST           EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;  -- definir en userVariables 
-DECLARE C_USUARIO_PROTOCOLO_PS9_IH_HOST    EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;
-DECLARE C_TERMINAL_CONTABLE_PS9_IH_HOST    EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;
-
+DECLARE QMName 							EXTERNAL CHARACTER C_EMPTY_CHARACTER;
+DECLARE C_REPLYTOQ_MSJ_MQ_HOST          EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;
+DECLARE C_PREFIJO_ALIAS_QMGR_PRE        EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;
+DECLARE C_PREFIJO_ALIAS_QMGR_POST       EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;
+DECLARE C_COLA_MQ_ENVIO_HOST            EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;  -- definir en userVariables 
+DECLARE C_QMGR_MQ_ENVIO_HOST            EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;  -- definir en userVariables 
+DECLARE C_COLA_MQ_RESPUESTA_HOST        EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;  -- definir en userVariables 
+DECLARE C_USUARIO_PROTOCOLO_PS9_IH_HOST EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;
+DECLARE C_TERMINAL_CONTABLE_PS9_IH_HOST EXTERNAL CONSTANT CHARACTER C_EMPTY_CHARACTER;
 
 CREATE COMPUTE MODULE DoXMLToCWF
 	CREATE FUNCTION Main() RETURNS BOOLEAN
-	BEGIN
-				   
+	BEGIN	   
 		-- Validacion de header para ambas operaciones. "ObtenerCatalogo" y "ObtenerSimulacion"
 		CALL ValidateMessageHeader(InputBody.*[1].tns1:header);
 		 
-		DECLARE rowCopyRq   ROW;  
-		DECLARE refInput    REFERENCE TO InputBody;
-		DECLARE refOutput   REFERENCE TO OutputRoot;
-		DECLARE refEnvVar   REFERENCE TO Environment.Variables;
-		 
-        CREATE LASTCHILD OF rowCopyRq DOMAIN GET_MESSAGE_DOMAIN_MRM() NAME 'ROOT';
-		DECLARE refEnvelope REFERENCE TO InputLocalEnvironment.SOAP.Envelope;
+		DECLARE rowCopyRq      ROW;  
+		DECLARE refEnvelope    REFERENCE TO InputLocalEnvironment.SOAP.Envelope;
+		DECLARE refInput       REFERENCE TO InputBody;
+		DECLARE refOutput      REFERENCE TO OutputRoot;
+		DECLARE refEnv         REFERENCE TO Environment;
+		DECLARE refEnvVar      REFERENCE TO Environment.Variables;
+		DECLARE operacion      CHARACTER refEnvelope.SOAP.Context.operation;
+		DECLARE C_MESSAGE_TYPE CHARACTER C_EMPTY_CHARACTER;
 		
-		DECLARE operacion CHARACTER refEnvelope.SOAP.Context.operation;
-		DECLARE C_MESSAGE_TYPE CHARACTER '';
-		
-		SET refEnvVar.Service.RequestOriginal = InputBody;
+		SET OutputRoot.Properties.MessageSet         = C_MESSAGE_SET_SIMULADOR_TREA;
+		SET OutputRoot.Properties.MessageFormat      = C_MESSAGE_FORMAT;
 		SET refEnvVar.Service.IdentificadorRespuesta = COALESCE(InputLocalEnvironment.Destination.SOAP.Reply.ReplyIdentifier, 'NO OBTENIDO');
-		SET refEnvVar.Service.Operacion = operacion;
-		SET OutputRoot.Properties.MessageSet    = C_MESSAGE_SET_SIMULADOR_TREA;
-		SET OutputRoot.Properties.MessageFormat = C_MESSAGE_FORMAT;
-
-		IF operacion = OPERATION_SIMULACION THEN
-			
-			DECLARE refInSimulacion REFERENCE TO refInput.tns1:requestSimulacion;
-			SET refEnvVar.Service.idTransaccion = COALESCE(refInSimulacion.tns1:header.tns1:idTransaccion, '');
-			SET C_MESSAGE_TYPE = C_MESSAGE_TYPE_OBTENER_SIMULACION;
-			CALL ValidateMessageSimulacion(refInSimulacion);
-			
-		    SET rowCopyRq.ROOT.N425_PRODUCT = refInSimulacion.tns1:body.tns1:codigoProducto;
-		    SET rowCopyRq.ROOT.N425_SUBPROD = refInSimulacion.tns1:body.tns1:codigoSubProducto;
-		    SET rowCopyRq.ROOT.N425_MONTOIN = CAST(CAST(refInSimulacion.tns1:body.tns1:montoInicial AS DECIMAL) AS CHARACTER);
-		    SET rowCopyRq.ROOT.N425_TPPLAZO = refInSimulacion.tns1:body.tns1:tipoPlazo;
-		    SET rowCopyRq.ROOT.N425_PLAZO   = CAST(refInSimulacion.tns1:body.tns1:plazo AS CHARACTER);
-		    SET rowCopyRq.ROOT.N425_TASA    = CAST(CAST(refInSimulacion.tns1:body.tns1:tasa AS DECIMAL) AS CHARACTER);
-			SET rowCopyRq.ROOT.N425_ABOINT  = refInSimulacion.tns1:body.tns1:liquidacionIntereses;
-			
-			/*
-			SET OutputRoot.XMLNSC.Request.Body.Trama = CAST( ASBITSTREAM ( 
-										      OutputRoot.MRM, ,
-											  InputRoot.Properties.CodedCharSetId,
-											  'MS_MB_SIST_BBVA_CONSULTA',
-											  'msg_BGNC425',
-									 	 	  'Binary1', RootBitStream ) AS CHARACTER CCSID InputRoot.Properties.CodedCharSetId );*/ 
-			
+		SET refEnvVar.Service.RequestOriginal        = InputBody;
+		SET refEnvVar.Service.Operacion 		     = operacion;
+		
+		CREATE LASTCHILD OF rowCopyRq DOMAIN GET_MESSAGE_DOMAIN_MRM() NAME 'ROOT';
+		
+		IF operacion = OPERATION_SIMULACION THEN				
+			CALL SetRequestToHostSimulacion(
+				refInput, 
+				refEnv,
+				rowCopyRq,
+				C_MESSAGE_TYPE
+				);
+				
 		ELSEIF operacion = OPERATION_CATALAGO THEN
-		    DECLARE refInCatalogo REFERENCE TO refInput.tns1:requestCatalogo;
-			SET refEnvVar.Service.idTransaccion = COALESCE(refInCatalogo.tns1:header.tns1:idTransaccion, '');
-		    SET C_MESSAGE_TYPE = C_MESSAGE_TYPE_OBTENER_CATALOGO;
-		    
-		    -- al parecer estos valores tienen parametria 
-		    SET rowCopyRq.ROOT.MTG004_CDTABLA  = '0724'; --'0724'; 
-			SET rowCopyRq.ROOT.MTG004_CLAVBAN  = '0011'; --'0011';
-			SET rowCopyRq.ROOT.MTG004_CLAVTG   = '0011'; -- que es esto???? 
-			SET rowCopyRq.ROOT.MTG004_TCCIDIOM = 'R';    --'R';
-			
-			/*
-			SET OutputRoot.XMLNSC.Request.Body.Trama = CAST( ASBITSTREAM ( 
-										      OutputRoot.MRM, ,
-											  InputRoot.Properties.CodedCharSetId,
-											  'MS_MB_SIST_BBVA_CONSULTA',
-											  'msg_MTG004',
-									 	 	  'Binary1', RootBitStream ) AS CHARACTER CCSID InputRoot.Properties.CodedCharSetId );			
-			*/		
+			CALL SetRequestToHostCatalogo(
+				refInput, 
+				refEnv,
+				rowCopyRq,
+				C_MESSAGE_TYPE
+				);	
+				
 		END IF;
 		
 		--Se configura el formato MQ de salida
@@ -117,18 +89,15 @@ CREATE COMPUTE MODULE DoXMLToCWF
 	
 		DECLARE codigoTransaccion CHARACTER getCodeTransaction(operacion); 
 		CALL SetRequestMQAdapterPS9(OutputRoot.MRM, codigoTransaccion, Environment.TRAMA); 
-				
-		  						   
+					  						   
 		--Se establece el destino del mensaje MQ
 		CALL SetDestinationMQParam(C_COLA_MQ_ENVIO_HOST, C_QMGR_MQ_ENVIO_HOST, OutputLocalEnvironment); --pendiente! 
 								   
 		--Se establece la cola de respuesta y el timeout
-		SET OutputLocalEnvironment.MQ.GET.QueueName			 = C_COLA_MQ_RESPUESTA_HOST;-- pendiente! --QRT.SIMPRES.RESP.QMPTSIMP 
+		SET OutputLocalEnvironment.MQ.GET.QueueName			 = C_COLA_MQ_RESPUESTA_HOST; -- pendiente! --QRT.SIMPRES.RESP.QMPTSIMP 
 		SET OutputLocalEnvironment.MQ.GET.MQGMO.WaitInterval = C_TIMEOUT_MQ_ENVIO_HOST;  
 			 		    											   		    											  
 		-- 3) que ccsid y encoding debo usar? 
-						    											  
-		
 		RETURN TRUE;
 	END;
 
